@@ -5,7 +5,7 @@ class Beltline:
 
     def __init__(self):
 
-        # database connection, not needed yet
+        # database connection, not needed yet, will need upon adding SQL commands
         # self.db = self.connect()
         # self.cursor = self.db.cursor()
 
