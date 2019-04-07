@@ -221,8 +221,42 @@ class Beltline:
         self.displayRegistrationNavigationWindow(self.registrationNavigationWindow)
         self.userOnlyRegistrationWindow.destroy()
 
+    def initUserFunctionalityWindow(self):
+        self.userFunctionalityWindow = Toplevel()
+        self.userFunctionalityWindow.title("Functionality -- User")
+        self.userFunctionalityWindow.config(background='#ffffff')
+
+    def displayUserFunctionalityWindow(self, userFunctionalityWindow):
+        userFunctionalityLabel = Label(userFunctionalityWindow, text="User Functionality", font="Helvetica",
+                              foreground='#000000', background='#ffffff')
+        userFunctionalityLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
+
+
+        takeTransitButton = Button(userFunctionalityWindow, command=self.onUserOnlyRegistrationRegisterButtonClicked, text="Take Transit",
+                                background='#4286f4')
+        takeTransitButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        viewTransitHistoryButton = Button(userFunctionalityWindow, command=self.onUserOnlyRegistrationRegisterButtonClicked,
+                                        text = "View Transit History", background='#4286f4')
+        viewTransitHistoryButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        backButton = Button(userFunctionalityWindow, command=self.onUserFunctionalityBackButtonClicked, text="Back",
+                             background='#4286f4')
+        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+
     def onUserOnlyRegistrationRegisterButtonClicked(self):
-        return False
+        self.initUserFunctionalityWindow()
+        self.displayUserFunctionalityWindow(self.userFunctionalityWindow)
+        self.userOnlyRegistrationWindow.destroy()
+
+    def onUserFunctionalityBackButtonClicked(self):
+        self.initUserOnlyRegistrationWindow()
+        self.displayUserOnlyRegistrationWindow(self.userOnlyRegistrationWindow)
+        self.userFunctionalityWindow.destroy()
+
+
+
 
     #----------------------------------------------------------------------------------------------------------------#
     #                                                                                                                #
@@ -293,8 +327,50 @@ class Beltline:
         self.displayRegistrationNavigationWindow(self.registrationNavigationWindow)
         self.visitorOnlyRegistrationWindow.destroy()
 
+    def initVisitorFunctionalityWindow(self):
+        self.visitorFunctionalityWindow = Toplevel()
+        self.visitorFunctionalityWindow.title("Functionality -- Visitor")
+        self.visitorFunctionalityWindow.config(background='#ffffff')
+
+    def displayVisitorFunctionalityWindow(self, visitorFunctionalityWindow):
+        visitorFunctionalityLabel = Label(visitorFunctionalityWindow, text="Visitor Functionality", font="Helvetica",
+                              foreground='#000000', background='#ffffff')
+        visitorFunctionalityLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
+
+
+        exploreEventButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="Explore Event",
+                                background='#4286f4')
+        exploreEventButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        exploreSiteButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "Explore Site", background='#4286f4')
+        exploreSiteButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        viewVisitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="View Visit History",
+                                background='#4286f4')
+        viewVisitHistoryButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        takeTransitButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "Take Transit", background='#4286f4')
+        takeTransitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        viewTransitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "View Transit History", background='#4286f4')
+        viewTransitHistoryButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        backButton = Button(visitorFunctionalityWindow, command=self.onVisitorFunctionalityBackButtonClicked, text="Back",
+                             background='#4286f4')
+        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
     def onVisitorOnlyRegistrationRegisterButtonClicked(self):
-        return False
+        self.initVisitorFunctionalityWindow()
+        self.displayVisitorFunctionalityWindow(self.visitorFunctionalityWindow)
+        self.visitorOnlyRegistrationWindow.destroy()
+
+    def onVisitorFunctionalityBackButtonClicked(self):
+        self.initVisitorOnlyRegistrationWindow()
+        self.displayVisitorOnlyRegistrationWindow(self.visitorOnlyRegistrationWindow)
+        self.visitorFunctionalityWindow.destroy()
 
     #----------------------------------------------------------------------------------------------------------------#
     #                                                                                                                #
