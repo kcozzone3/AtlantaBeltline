@@ -84,9 +84,19 @@ class Beltline:
 
     def onLoginButtonClicked(self):
         if self.loginUsername.get() == "User":
-            self.initUserNavigationWindow()
-            self.displayUserNavigationWindow(self.userNavigationWindow)
+            self.initUserFunctionalityWindow()
+            self.displayUserFunctionalityWindow(self.userFunctionalityWindow)
             self.loginWindow.withdraw()
+        if self.loginUsername.get() == "Visitor":
+            self.initVisitorFunctionalityWindow()
+            self.displayVisitorFunctionalityWindow(self.visitorFunctionalityWindow)
+            self.loginWindow.withdraw()
+        #if self.loginUsername.get() == "Employee":
+            #self.initEmployeeFunctionalityWindow()
+            #self.displayEmployeeFunctionalityWindow(self.employeeFunctionalityWindow)
+            #self.loginWindow.withdraw()
+
+
 
 
     #----------------------------------------------------------------------------------------------------------------#
@@ -246,8 +256,8 @@ class Beltline:
 
 
     def onUserOnlyRegistrationRegisterButtonClicked(self):
-        self.initUserFunctionalityWindow()
-        self.displayUserFunctionalityWindow(self.userFunctionalityWindow)
+        self.initLoginWindow()
+        self.displayLoginWindow(self.loginWindow)
         self.userOnlyRegistrationWindow.destroy()
 
     def onUserFunctionalityBackButtonClicked(self):
@@ -363,8 +373,8 @@ class Beltline:
         backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onVisitorOnlyRegistrationRegisterButtonClicked(self):
-        self.initVisitorFunctionalityWindow()
-        self.displayVisitorFunctionalityWindow(self.visitorFunctionalityWindow)
+        self.initLoginWindow()
+        self.displayLoginWindow(self.loginWindow)
         self.visitorOnlyRegistrationWindow.destroy()
 
     def onVisitorFunctionalityBackButtonClicked(self):
