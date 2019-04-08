@@ -116,7 +116,7 @@ CREATE TABLE Event
       	Price decimal(9,2) NOT NULL,
      	Capacity int,
       	MinStaffReq int NOT NULL,
-     	Description varchar(500) NOT NULL,
+     	Description varchar(800) NOT NULL,
 
       	PRIMARY KEY (SiteName, EventName, StartDate),
       	FOREIGN KEY (SiteName) REFERENCES Site(Name)
