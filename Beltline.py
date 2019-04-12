@@ -1,13 +1,16 @@
 from tkinter import *
 import pymysql
+import hashlib
+from tkinter import messagebox
+import random
 
 class Beltline:
 
     def __init__(self):
 
         # database connection, not needed yet, will need upon adding SQL commands
-        # self.db = self.connect()
-        # self.cursor = self.db.cursor()
+        self.db = self.connect()
+        self.cursor = self.db.cursor()
 
         #when we call init, we need to create the first window - login. We build the window and display it separately
         self.initLoginWindow()
@@ -15,6 +18,8 @@ class Beltline:
 
         #we make the login window the main loop (causing the program to actually start and run
         self.loginWindow.mainloop()
+
+
 
         #if the main loop closes, we exit the program
         sys.exit()
@@ -83,21 +88,92 @@ class Beltline:
         self.loginWindow.withdraw()
 
     def onLoginButtonClicked(self):
-        if self.loginUsername.get() == "User":
+        self.username = self.loginUsername.get()
+        self.password = self.loginPassword.get()
+
+        if not self.username:
+            messagebox.showwarning("Username Field Empty", "The username field is empty. Please try again.")
+            return
+
+        if not self.password:
+            messagebox.showwarning("Password Field Empty", "The password field is empty. Please try again.")
+            return
+
+        hashedPassword = self.encrypt(self.password)
+
+
+        usernameValid = self.cursor.execute("SELECT * FROM user where EXISTS (SELECT * FROM user where Username=%s)", self.username)
+
+        if usernameValid == 0:
+            messagebox.showwarning("Username Invalid", "This username is not registered in the system.")
+            return
+
+        passwordMatching = self.cursor.execute("SELECT * FROM user where EXISTS (SELECT * FROM user where (Username=%s and Password=%s))", (self.username, hashedPassword))
+
+        if passwordMatching == 0:
+            messagebox.showwarning("Invalid Login", "This username and password combination is not registered in the system.")
+            return
+
+
+        self.cursor.execute("SELECT status FROM user where Username=%s", self.username)
+        accountStatus = self.cursor.fetchone()
+        accountStatus = accountStatus.get('status').lower()
+
+        if (accountStatus == "declined"):
+            messagebox.showwarning("Banned Account", "Your account has been banned. Please contact an administrator.")
+            return
+        elif (accountStatus == "pending"):
+            messagebox.showwarning("Pending Approval", "Your account is pending approval. Please be patient.")
+            return
+
+        isVisitor = self.cursor.execute("SELECT * FROM visitor where EXISTS (SELECT * FROM visitor where VisUsername=%s)", self.username)
+        isEmployee = self.cursor.execute("SELECT * FROM employee where EXISTS (SELECT * FROM employee where EmpUsername=%s)", self.username)
+        if isEmployee:
+            isAdmin = self.cursor.execute("SELECT * FROM administrator where EXISTS (SELECT * FROM administrator where AdminUsername=%s)", self.username)
+            isManager = self.cursor.execute("SELECT * FROM manager where EXISTS (SELECT * FROM manager where ManUsername=%s)", self.username)
+            isStaff = self.cursor.execute("SELECT * FROM staff where EXISTS (SELECT * FROM staff where StaffUsername=%s)", self.username)
+
+        if isVisitor:
+            if isEmployee:
+                if isAdmin:
+                    messagebox.showwarning("Administrator-Visitor", "Admin-Visitor Functionality not added yet.")
+                elif isManager:
+                    messagebox.showwarning("Manager-Visitor", "Manager-Visitor Functionality not added yet.")
+                elif isStaff:
+                    messagebox.showwarning("Staff-Visitor", "Staff-Visitor Functionality not added yet.")
+                else:
+                    messagebox.showwarning("Uhhh", "You shouldn't be here (employee-visitor).")
+            else:
+                #Just a visitor
+                self.initVisitorFunctionalityWindow()
+                self.displayVisitorFunctionalityWindow(self.visitorFunctionalityWindow)
+                self.loginWindow.withdraw()
+        elif isEmployee:
+            if isAdmin:
+                messagebox.showwarning("Administrator", "Admin Functionality not added yet.")
+            elif isManager:
+                messagebox.showwarning("Manager", "Manager Functionality not added yet.")
+            elif isStaff:
+                messagebox.showwarning("Staff", "Staff Functionality not added yet.")
+            else:
+                messagebox.showwarning("Uhhh", "You shouldn't be here (employee).")
+        else:
+            #Just a user
             self.initUserFunctionalityWindow()
             self.displayUserFunctionalityWindow(self.userFunctionalityWindow)
             self.loginWindow.withdraw()
-        if self.loginUsername.get() == "Visitor":
-            self.initVisitorFunctionalityWindow()
-            self.displayVisitorFunctionalityWindow(self.visitorFunctionalityWindow)
-            self.loginWindow.withdraw()
-        #if self.loginUsername.get() == "Employee":
-            #self.initEmployeeFunctionalityWindow()
-            #self.displayEmployeeFunctionalityWindow(self.employeeFunctionalityWindow)
-            #self.loginWindow.withdraw()
 
 
+    #----------------------------------------------------------------------------------------------------------------#
+    #                                                                                                                #
+    #                                        PASSWORD HASHING                                                        #
+    #                                                                                                                #
+    #----------------------------------------------------------------------------------------------------------------#
 
+
+    def encrypt(self, unhashed_string):
+        hashed_string = hashlib.sha256(unhashed_string.encode()).hexdigest()
+        return hashed_string
 
     #----------------------------------------------------------------------------------------------------------------#
     #                                                                                                                #
@@ -231,41 +307,58 @@ class Beltline:
         self.displayRegistrationNavigationWindow(self.registrationNavigationWindow)
         self.userOnlyRegistrationWindow.destroy()
 
-    def initUserFunctionalityWindow(self):
-        self.userFunctionalityWindow = Toplevel()
-        self.userFunctionalityWindow.title("Functionality -- User")
-        self.userFunctionalityWindow.config(background='#ffffff')
-
-    def displayUserFunctionalityWindow(self, userFunctionalityWindow):
-        userFunctionalityLabel = Label(userFunctionalityWindow, text="User Functionality", font="Helvetica",
-                              foreground='#000000', background='#ffffff')
-        userFunctionalityLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
-
-
-        takeTransitButton = Button(userFunctionalityWindow, command=self.onUserOnlyRegistrationRegisterButtonClicked, text="Take Transit",
-                                background='#4286f4')
-        takeTransitButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        viewTransitHistoryButton = Button(userFunctionalityWindow, command=self.onUserOnlyRegistrationRegisterButtonClicked,
-                                        text = "View Transit History", background='#4286f4')
-        viewTransitHistoryButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        backButton = Button(userFunctionalityWindow, command=self.onUserFunctionalityBackButtonClicked, text="Back",
-                             background='#4286f4')
-        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
 
     def onUserOnlyRegistrationRegisterButtonClicked(self):
-        self.initLoginWindow()
-        self.displayLoginWindow(self.loginWindow)
+        firstName = self.registrationFirstName.get()
+        lastName = self.registrationLastName.get()
+        username = self.registrationUserName.get()
+        password = self.registrationPassword.get()
+        confirmPassword = self.registrationConfirmPassword.get()
+
+        if not firstName:
+            firstName = ""
+        if not lastName:
+            lastName = ""
+
+        if not username:
+            messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
+            return
+        if not password:
+            messagebox.showwarning("Missing Password", "The password field is empty. Please try again.")
+            return
+        if not confirmPassword:
+            confirmPassword = ""
+
+        if len(username) > 16:
+            messagebox.showwarning("Username too long", "Usernames can have at maximum 16 letters.")
+            return
+
+        usernameExists = self.cursor.execute("SELECT * from user where Username=%s", username)
+        if usernameExists:
+            messagebox.showwarning("Username Already Taken", "This username already exists within the database.")
+            return
+
+        if len(password) < 8:
+            messagebox.showwarning("Password Too Short", "Passwords must have at least 8 characters.")
+            return
+
+        if password != confirmPassword:
+            messagebox.showwarning("Password Mismatch", "The password and the confirmed Password do not match.")
+            return
+
+        if len(firstName) > 32:
+            messagebox.showwarning("First Name too long", "First names can only be 32 characters. Please abbreviate.")
+            return
+        if len(lastName) > 32:
+            messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
+            return
+
+        hashedPassword = self.encrypt(password)
+        self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
+        messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
+
         self.userOnlyRegistrationWindow.destroy()
-
-    def onUserFunctionalityBackButtonClicked(self):
-        self.initUserOnlyRegistrationWindow()
-        self.displayUserOnlyRegistrationWindow(self.userOnlyRegistrationWindow)
-        self.userFunctionalityWindow.destroy()
-
-
+        self.loginWindow.deiconify()
 
 
     #----------------------------------------------------------------------------------------------------------------#
@@ -337,50 +430,60 @@ class Beltline:
         self.displayRegistrationNavigationWindow(self.registrationNavigationWindow)
         self.visitorOnlyRegistrationWindow.destroy()
 
-    def initVisitorFunctionalityWindow(self):
-        self.visitorFunctionalityWindow = Toplevel()
-        self.visitorFunctionalityWindow.title("Functionality -- Visitor")
-        self.visitorFunctionalityWindow.config(background='#ffffff')
-
-    def displayVisitorFunctionalityWindow(self, visitorFunctionalityWindow):
-        visitorFunctionalityLabel = Label(visitorFunctionalityWindow, text="Visitor Functionality", font="Helvetica",
-                              foreground='#000000', background='#ffffff')
-        visitorFunctionalityLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
-
-
-        exploreEventButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="Explore Event",
-                                background='#4286f4')
-        exploreEventButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        exploreSiteButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
-                                        text = "Explore Site", background='#4286f4')
-        exploreSiteButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        viewVisitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="View Visit History",
-                                background='#4286f4')
-        viewVisitHistoryButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        takeTransitButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
-                                        text = "Take Transit", background='#4286f4')
-        takeTransitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        viewTransitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
-                                        text = "View Transit History", background='#4286f4')
-        viewTransitHistoryButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
-
-        backButton = Button(visitorFunctionalityWindow, command=self.onVisitorFunctionalityBackButtonClicked, text="Back",
-                             background='#4286f4')
-        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onVisitorOnlyRegistrationRegisterButtonClicked(self):
-        self.initLoginWindow()
-        self.displayLoginWindow(self.loginWindow)
-        self.visitorOnlyRegistrationWindow.destroy()
+        firstName = self.registrationFirstName.get()
+        lastName = self.registrationLastName.get()
+        username = self.registrationUserName.get()
+        password = self.registrationPassword.get()
+        confirmPassword = self.registrationConfirmPassword.get()
 
-    def onVisitorFunctionalityBackButtonClicked(self):
-        self.initVisitorOnlyRegistrationWindow()
-        self.displayVisitorOnlyRegistrationWindow(self.visitorOnlyRegistrationWindow)
-        self.visitorFunctionalityWindow.destroy()
+        if not firstName:
+            firstName = ""
+        if not lastName:
+            lastName = ""
+
+        if not username:
+            messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
+            return
+        if not password:
+            messagebox.showwarning("Missing Password", "The password field is empty. Please try again.")
+            return
+        if not confirmPassword:
+            confirmPassword = ""
+
+        if len(username) > 16:
+            messagebox.showwarning("Username too long", "Usernames can have at maximum 16 letters.")
+            return
+
+        usernameExists = self.cursor.execute("SELECT * from user where Username=%s", username)
+        if usernameExists:
+            messagebox.showwarning("Username Already Taken", "This username already exists within the database.")
+            return
+
+        if len(password) < 8:
+            messagebox.showwarning("Password Too Short", "Passwords must have at least 8 characters.")
+            return
+
+        if password != confirmPassword:
+            messagebox.showwarning("Password Mismatch", "The password and the confirmed Password do not match.")
+            return
+
+        if len(firstName) > 32:
+            messagebox.showwarning("First Name too long", "First names can only be 32 characters. Please abbreviate.")
+            return
+        if len(lastName) > 32:
+            messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
+            return
+
+        hashedPassword = self.encrypt(password)
+        self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
+        self.cursor.execute("INSERT into visitor values (%s)", username)
+        messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
+
+        self.visitorOnlyRegistrationWindow.destroy()
+        self.loginWindow.deiconify()
+
 
     #----------------------------------------------------------------------------------------------------------------#
     #                                                                                                                #
@@ -400,8 +503,10 @@ class Beltline:
         self.registrationPassword = StringVar()
         self.registrationConfirmPassword = StringVar()
         self.registrationEmployeeType = StringVar()
+        self.registrationEmployeeType.set("")
         self.registrationState = StringVar()
-        self.registrationPhone = IntVar()
+        self.registrationState.set("")
+        self.registrationPhone = StringVar()
         self.registrationAddress = StringVar()
         self.registrationCity = StringVar()
         self.registrationZIP = StringVar()
@@ -451,7 +556,7 @@ class Beltline:
         userTypeLabel = Label(employeeOnlyRegistrationWindow, text="Employee Type", background='#ffffff')
         userTypeLabel.grid(row=7, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
-        userTypeDropdown = OptionMenu(employeeOnlyRegistrationWindow, self.employeeType, *self.employeeType)
+        userTypeDropdown = OptionMenu(employeeOnlyRegistrationWindow, self.registrationEmployeeType, *self.employeeType)
         userTypeDropdown.grid(row=7, column=2, padx=(8, 5), pady=(0, 4), sticky=W)
 
         phoneLabel = Label(employeeOnlyRegistrationWindow, text="Phone", background='#ffffff')
@@ -461,38 +566,38 @@ class Beltline:
         phoneBox.grid(row=8, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         addressLabel = Label(employeeOnlyRegistrationWindow, text="Address", background='#ffffff')
-        addressLabel.grid(row=8, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        addressLabel.grid(row=9, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         addressBox = Entry(employeeOnlyRegistrationWindow, textvariable=self.registrationAddress, width=20)
-        addressBox.grid(row=8, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        addressBox.grid(row=9, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         cityLabel = Label(employeeOnlyRegistrationWindow, text="City", background='#ffffff')
-        cityLabel.grid(row=9, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        cityLabel.grid(row=10, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         cityBox = Entry(employeeOnlyRegistrationWindow, textvariable=self.registrationCity, width=20)
-        cityBox.grid(row=9, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        cityBox.grid(row=10, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         stateLabel = Label(employeeOnlyRegistrationWindow, text="State", background='#ffffff')
-        stateLabel.grid(row=10, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        stateLabel.grid(row=11, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         stateDropdown = OptionMenu(employeeOnlyRegistrationWindow, self.registrationState, *self.states)
-        stateDropdown.grid(row=10, column=2, padx=(8, 5), pady=(0, 4), sticky=W)
+        stateDropdown.grid(row=11, column=2, padx=(8, 5), pady=(0, 4), sticky=W)
 
         zipLabel = Label(employeeOnlyRegistrationWindow, text="Zipcode", background='#ffffff')
-        zipLabel.grid(row=11, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        zipLabel.grid(row=12, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         zipBox = Entry(employeeOnlyRegistrationWindow, textvariable=self.registrationZIP, width=20)
-        zipBox.grid(row=11, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        zipBox.grid(row=12, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(employeeOnlyRegistrationWindow, command=self.onEmployeeOnlyRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=12, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(employeeOnlyRegistrationWindow, command=self.onEmployeeOnlyRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=12, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=13, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onEmployeeOnlyRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -500,7 +605,112 @@ class Beltline:
         self.employeeOnlyRegistrationWindow.destroy()
 
     def onEmployeeOnlyRegistrationRegisterButtonClicked(self):
-        return False
+        firstName = self.registrationFirstName.get()
+        lastName = self.registrationLastName.get()
+        username = self.registrationUserName.get()
+        password = self.registrationPassword.get()
+        confirmPassword = self.registrationConfirmPassword.get()
+
+        employeeType = self.registrationEmployeeType.get()
+        state = self.registrationState.get()
+        phone = self.registrationPhone.get()
+        address = self.registrationAddress.get()
+        city = self.registrationCity.get()
+        zipcode = self.registrationZIP.get()
+
+        if not firstName:
+            firstName = ""
+        if not lastName:
+            lastName = ""
+        if not state:
+            state = ""
+        if not address:
+            address = ""
+        if not city:
+            city = ""
+        if not zipcode:
+            zipcode = ""
+        if not confirmPassword:
+            confirmPassword = ""
+
+
+        if not username:
+            messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
+            return
+        if not password:
+            messagebox.showwarning("Missing Password", "The password field is empty. Please try again.")
+            return
+        if not employeeType:
+            messagebox.showwarning("Missing Employee Type", "Please select an employee type.")
+            return
+        if not phone:
+            messagebox.showwarning("Missing Phone Number", "Please enter a phone number in format xxxxxxxxxx")
+            return
+
+
+        if len(username) > 16:
+            messagebox.showwarning("Username too long", "Usernames can have at maximum 16 letters.")
+            return
+
+        usernameExists = self.cursor.execute("SELECT * from user where Username=%s", username)
+        if usernameExists:
+            messagebox.showwarning("Username Already Taken", "This username already exists within the database.")
+            return
+
+
+        if len(password) < 8:
+            messagebox.showwarning("Password Too Short", "Passwords must have at least 8 characters.")
+            return
+
+        if password != confirmPassword:
+            messagebox.showwarning("Password Mismatch", "The password and the confirmed Password do not match.")
+            return
+
+        if len(firstName) > 32:
+            messagebox.showwarning("First Name too long", "First names can only be 32 characters. Please abbreviate.")
+            return
+        if len(lastName) > 32:
+            messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
+            return
+        if len(address) > 64:
+            messagebox.showwarning("Address too long", "Addresses are limited to 64 characters. Please abbreviate.")
+            return
+        if len(phone) > 10 or len(phone) < 10:
+            messagebox.showwarning("Phone number incorrect", "Please enter a phone number in format xxxxxxxxxx")
+            return
+        if len(zipcode) > 5:
+            messagebox.showwarning("Zipcode too long", "Please enter a zipcode in format xxxxx")
+            return
+        if zipcode != "":
+            if len(zipcode) < 5:
+                messagebox.showwarning("Zipcode too short", "Please enter a zipcode in format xxxxxx")
+        if len(city) > 32:
+            messagebox.showwarning("City name too long", "The city name is limited to 32 characters. Please abbreviate.")
+
+        phoneExists = self.cursor.execute("SELECT * from employee where Phone=%s", phone)
+        if phoneExists:
+            messagebox.showwarning("Phone Already Registered", "This phone number is already registered.")
+
+        empId = random.randint(1, 999999999)
+        while self.cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
+            empId = random.randint(1, 999999999)
+
+
+        hashedPassword = self.encrypt(password)
+        self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
+        self.cursor.execute("INSERT into employee values (%s, %s, %s, %s, %s, %s, %s)", (username, empId, phone, address, city, state, zipcode))
+
+        if employeeType == "Manager":
+            self.cursor.execute("INSERT into manager values (%s)", username)
+        elif employeeType == "Staff":
+            self.cursor.execute("INSERT into staff values (%s)", username)
+        else:
+            messagebox.showwarning("Uhh", "You shouldn't be here: employee-visitor")
+
+        messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
+
+        self.employeeOnlyRegistrationWindow.destroy()
+        self.loginWindow.deiconify()
 
 
     #----------------------------------------------------------------------------------------------------------------#
@@ -522,7 +732,7 @@ class Beltline:
         self.registrationConfirmPassword = StringVar()
         self.registrationEmployeeType = StringVar()
         self.registrationState = StringVar()
-        self.registrationPhone = IntVar()
+        self.registrationPhone = StringVar()
         self.registrationAddress = StringVar()
         self.registrationCity = StringVar()
         self.registrationZIP = StringVar()
@@ -572,7 +782,7 @@ class Beltline:
         userTypeLabel = Label(employeeVisitorRegistrationWindow, text="Employee Type", background='#ffffff')
         userTypeLabel.grid(row=7, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
-        userTypeDropdown = OptionMenu(employeeVisitorRegistrationWindow, self.employeeType, *self.employeeType)
+        userTypeDropdown = OptionMenu(employeeVisitorRegistrationWindow, self.registrationEmployeeType, *self.employeeType)
         userTypeDropdown.grid(row=7, column=2, padx=(16, 5), pady=(0, 4), sticky=W)
 
         phoneLabel = Label(employeeVisitorRegistrationWindow, text="Phone", background='#ffffff')
@@ -582,38 +792,38 @@ class Beltline:
         phoneBox.grid(row=8, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         addressLabel = Label(employeeVisitorRegistrationWindow, text="Address", background='#ffffff')
-        addressLabel.grid(row=8, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        addressLabel.grid(row=9, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         addressBox = Entry(employeeVisitorRegistrationWindow, textvariable=self.registrationAddress, width=20)
-        addressBox.grid(row=8, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        addressBox.grid(row=9, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         cityLabel = Label(employeeVisitorRegistrationWindow, text="City", background='#ffffff')
-        cityLabel.grid(row=9, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        cityLabel.grid(row=10, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         cityBox = Entry(employeeVisitorRegistrationWindow, textvariable=self.registrationCity, width=20)
-        cityBox.grid(row=9, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        cityBox.grid(row=10, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         stateLabel = Label(employeeVisitorRegistrationWindow, text="State", background='#ffffff')
-        stateLabel.grid(row=10, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        stateLabel.grid(row=11, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         stateDropdown = OptionMenu(employeeVisitorRegistrationWindow, self.registrationState, *self.states)
-        stateDropdown.grid(row=10, column=2, padx=(16, 5), pady=(0, 4), sticky=W)
+        stateDropdown.grid(row=11, column=2, padx=(16, 5), pady=(0, 4), sticky=W)
 
         zipLabel = Label(employeeVisitorRegistrationWindow, text="Zipcode", background='#ffffff')
-        zipLabel.grid(row=11, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        zipLabel.grid(row=12, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         zipBox = Entry(employeeVisitorRegistrationWindow, textvariable=self.registrationZIP, width=20)
-        zipBox.grid(row=11, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        zipBox.grid(row=12, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(employeeVisitorRegistrationWindow, command=self.onEmployeeVisitorRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=12, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(employeeVisitorRegistrationWindow, command=self.onEmployeeVisitorRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=12, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=13, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onEmployeeVisitorRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -621,39 +831,190 @@ class Beltline:
         self.employeeVisitorRegistrationWindow.destroy()
 
     def onEmployeeVisitorRegistrationRegisterButtonClicked(self):
-        return False
+        firstName = self.registrationFirstName.get()
+        lastName = self.registrationLastName.get()
+        username = self.registrationUserName.get()
+        password = self.registrationPassword.get()
+        confirmPassword = self.registrationConfirmPassword.get()
+
+        employeeType = self.registrationEmployeeType.get()
+        state = self.registrationState.get()
+        phone = self.registrationPhone.get()
+        address = self.registrationAddress.get()
+        city = self.registrationCity.get()
+        zipcode = self.registrationZIP.get()
+
+        if not firstName:
+            firstName = ""
+        if not lastName:
+            lastName = ""
+        if not state:
+            state = ""
+        if not address:
+            address = ""
+        if not city:
+            city = ""
+        if not zipcode:
+            zipcode = ""
+        if not confirmPassword:
+            confirmPassword = ""
+
+
+        if not username:
+            messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
+            return
+        if not password:
+            messagebox.showwarning("Missing Password", "The password field is empty. Please try again.")
+            return
+        if not employeeType:
+            messagebox.showwarning("Missing Employee Type", "Please select an employee type.")
+            return
+        if not phone:
+            messagebox.showwarning("Missing Phone Number", "Please enter a phone number in format xxxxxxxxxx")
+            return
+
+
+        if len(username) > 16:
+            messagebox.showwarning("Username too long", "Usernames can have at maximum 16 letters.")
+            return
+
+        usernameExists = self.cursor.execute("SELECT * from user where Username=%s", username)
+        if usernameExists:
+            messagebox.showwarning("Username Already Taken", "This username already exists within the database.")
+            return
+
+
+        if len(password) < 8:
+            messagebox.showwarning("Password Too Short", "Passwords must have at least 8 characters.")
+            return
+
+        if password != confirmPassword:
+            messagebox.showwarning("Password Mismatch", "The password and the confirmed Password do not match.")
+            return
+
+        if len(firstName) > 32:
+            messagebox.showwarning("First Name too long", "First names can only be 32 characters. Please abbreviate.")
+            return
+        if len(lastName) > 32:
+            messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
+            return
+        if len(address) > 64:
+            messagebox.showwarning("Address too long", "Addresses are limited to 64 characters. Please abbreviate.")
+            return
+        if len(phone) > 10 or len(phone) < 10:
+            messagebox.showwarning("Phone number incorrect", "Please enter a phone number in format xxxxxxxxxx")
+            return
+        if len(zipcode) > 5:
+            messagebox.showwarning("Zipcode too long", "Please enter a zipcode in format xxxxx")
+            return
+        if zipcode != "":
+            if len(zipcode) < 5:
+                messagebox.showwarning("Zipcode too short", "Please enter a zipcode in format xxxxxx")
+        if len(city) > 32:
+            messagebox.showwarning("City name too long", "The city name is limited to 32 characters. Please abbreviate.")
+
+        phoneExists = self.cursor.execute("SELECT * from employee where Phone=%s", phone)
+        if phoneExists:
+            messagebox.showwarning("Phone Already Registered", "This phone number is already registered.")
+
+        empId = random.randint(1, 999999999)
+        while self.cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
+            empId = random.randint(1, 999999999)
+
+
+        hashedPassword = self.encrypt(password)
+        self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
+        self.cursor.execute("INSERT into employee values (%s, %s, %s, %s, %s, %s, %s)", (username, empId, phone, address, city, state, zipcode))
+        self.cursor.execute("INSERT into visitor values (%s)", username)
+        if employeeType == "Manager":
+            self.cursor.execute("INSERT into manager values (%s)", username)
+        elif employeeType == "Staff":
+            self.cursor.execute("INSERT into staff values (%s)", username)
+        else:
+            messagebox.showwarning("Uhh", "You shouldn't be here: employee-visitor")
+
+        messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
+
+        self.employeeVisitorRegistrationWindow.destroy()
+        self.loginWindow.deiconify()
 
     #----------------------------------------------------------------------------------------------------------------#
     #                                                                                                                #
-    #                               SPECIFIC USER  NAVIGATION                                                        #
+    #                               SPECIFIC USER NAVIGATION                                                         #
     #                                                                                                                #
     #----------------------------------------------------------------------------------------------------------------#
 
-    def initUserNavigationWindow(self):
-        self.userNavigationWindow = Toplevel()
-        self.userNavigationWindow.title("User Navigation")
-        self.userNavigationWindow.config(background='#ffffff')
+    def initUserFunctionalityWindow(self):
+        self.userFunctionalityWindow = Toplevel()
+        self.userFunctionalityWindow.title("Functionality -- User")
+        self.userFunctionalityWindow.config(background='#ffffff')
 
-    def displayUserNavigationWindow(self, userNavigationWindow):
-        userLabel = Label(userNavigationWindow, text="User Navigation", font="Helvetica",
+    def displayUserFunctionalityWindow(self, userFunctionalityWindow):
+        userLabel = Label(userFunctionalityWindow, text="User Functionality", font="Helvetica",
                               foreground='#000000', background='#ffffff')
         userLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
 
 
-        takeTransitButton = Button(userNavigationWindow, command=self.onTakeTransitButtonClicked, text="Take Transit",
+        takeTransitButton = Button(userFunctionalityWindow, command=self.onTakeTransitButtonClicked, text="Take Transit",
                                 background='#4286f4')
         takeTransitButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
 
-        transitHistoryButton = Button(userNavigationWindow, command=self.onTransitHistoryButtonClicked, text="Transit History",
+        transitHistoryButton = Button(userFunctionalityWindow, command=self.onTransitHistoryButtonClicked, text="Transit History",
                                    background='#4286f4')
         transitHistoryButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
-        userNavBackButton = Button(userNavigationWindow, command=self.onUserNavBackButtonClicked, text="Back",
+        userNavBackButton = Button(userFunctionalityWindow, command=self.onUserFunctionalityBackButtonClicked, text="Back",
                                    background='#4286f4')
         userNavBackButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
-    def onUserNavBackButtonClicked(self):
-        self.userNavigationWindow.destroy()
+    def onUserFunctionalityBackButtonClicked(self):
+        self.userFunctionalityWindow.destroy()
+        self.loginWindow.deiconify()
+
+    # ----------------------------------------------------------------------------------------------------------------#
+    #                                                                                                                 #
+    #                            VISITOR ONLY NAVIGATION                                                              #
+    #                                                                                                                 #
+    # ----------------------------------------------------------------------------------------------------------------#
+
+
+    def initVisitorFunctionalityWindow(self):
+        self.visitorFunctionalityWindow = Toplevel()
+        self.visitorFunctionalityWindow.title("Functionality -- Visitor")
+        self.visitorFunctionalityWindow.config(background='#ffffff')
+
+    def displayVisitorFunctionalityWindow(self, visitorFunctionalityWindow):
+        visitorFunctionalityLabel = Label(visitorFunctionalityWindow, text="Visitor Functionality", font="Helvetica",
+                              foreground='#000000', background='#ffffff')
+        visitorFunctionalityLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky = W + E)
+
+
+        exploreEventButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="Explore Event",
+                                background='#4286f4')
+        exploreEventButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        exploreSiteButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "Explore Site", background='#4286f4')
+        exploreSiteButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        viewVisitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="View Visit History",
+                                background='#4286f4')
+        viewVisitHistoryButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        takeTransitButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "Take Transit", background='#4286f4')
+        takeTransitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        viewTransitHistoryButton = Button(visitorFunctionalityWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked,
+                                        text = "View Transit History", background='#4286f4')
+        viewTransitHistoryButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky= W + E)
+
+        backButton = Button(visitorFunctionalityWindow, command=self.onVisitorFunctionalityBackButtonClicked, text="Back",
+                             background='#4286f4')
+        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onVisitorFunctionalityBackButtonClicked(self):
+        self.visitorFunctionalityWindow.destroy()
         self.loginWindow.deiconify()
 
 
@@ -670,7 +1031,27 @@ class Beltline:
     def onTransitHistoryButtonClicked(self):
         return False
 
+    # ----------------------------------------------------------------------------------------------------------------#
+    #                                                                                                                 #
+    #                            DATABASE CONNECTION IMPLEMENTATION                                                   #
+    #                                                                                                                 #
+    # ----------------------------------------------------------------------------------------------------------------#
+    def connect(self):
+        try:
+            #this is Kyle's connection: if you are running into errors, comment it out and make a similar call to this method
+            db = pymysql.connect(host='localhost',
+                             user='root',
+                             password='9A4q372X4m',
+                             db='beltline',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+            return db
+        except:
+            messagebox.showwarning('Error!','Cannot connect. Please check your parameters on the connection call.')
+            return False
+
 
 
 if __name__ == '__main__':
     beltline = Beltline()
+    beltline.db.close()
