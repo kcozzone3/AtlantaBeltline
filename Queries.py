@@ -1,12 +1,13 @@
 import pymysql
 from datetime import datetime
 
-connection = pymysql.connect(host='localhost',
-                             user=user,
-                             password=password,
-                             db='beltline',
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
+# Sample connection object we'd create inside Beltline.py after the user logs in.
+# connection = pymysql.connect(host='localhost',
+#                              user=user,
+#                              password=password,
+#                              db='beltline',
+#                              charset='utf8mb4',
+#                              cursorclass=pymysql.cursors.DictCursor)
 
 """
  __      ___                   
@@ -32,7 +33,6 @@ CREATE VIEW transit_connect AS
 SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as "# Connected Sites"
     FROM transit AS T JOIN connect AS C 
                       ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
-
                       JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
 """
@@ -49,86 +49,137 @@ SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as "# Connec
 """ """SCREENS 15-16"""
 
 """(15) USER TAKE TRANSIT"""
-# On load of this screen, we will retrieve all transits
-with connection.cursor() as cursor:
-    cursor.execute("SELECT * FROM transit_connect GROUP BY TransportType")
-    transits = cursor.fetchall()  # fetchall() returns all tuples from the query, specifically as a list of dicts.
-    transits = [tuple(d.values()) for d in transits] # Converts list of dicts into list of list of tuples. If it's
-                                                     # better as a list of dicts then just ignore this line.
 
-    # We also need to grab a list of all the available sites for the "Contain Site" dropdown
-    cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-    sites = list(cursor.fetchall()[0].values())
+class UserTakeTransit:
+    def __init__(self, connection):
+        self.connection = connection
 
-# Then, we'd display all of the info inside the transits variable and populate the containSiteDropdown with the
-# stuff inside the sites variable.
+    def load(self):
+        """Returns a list of tuples that represents all transits, and a list of sites (for the Contain Site filter
+        dropdown."""
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM transit_connect GROUP BY TransportType")
+            transits = cursor.fetchall()
+            transits = [tuple(d.values()) for d in transits]
 
-# The user may input items to filter, namely ContainSite, Price Range A and B, and Transport Type.
-# We might imagine that, in our onTakeTransitFilter() function that is called after a button press, we
-# would run the following code:
-with connection.cursor() as cursor:
-    p1, p2, transport_type, site = priceBox1.get(), priceBox2.get(), transportTypeDropdown.get(), containSiteDropdown.get()
-    cursor.execute(f"SELECT * FROM transit_connect WHERE SiteName = {site} AND "
-                   f"Price BETWEEN {p1} AND {p2} AND TransportType = {transport_type} GROUP BY TransportType, Route")
-    transits = cursor.fetchall()
-    transits = [tuple(d.values()) for d in transits]
+            cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
+            sites = list(cursor.fetchall()[0].values())
 
-# Then, we'd display this new info as we did before.
+        return transits, sites
 
-# Finally, the User may submit an entry to the database. But, remember, a User is not allowed to take the same transit
-# twice in the same day. Also, we'd need to make sure that Route and Transit Date are entered, and that the
-# Transit Date is a valid date. We'd run this code in our onTakeTransit() function that is called after a button press:
-with connection.cursor() as cursor:
-    route, date = routeButton.get(), transitDateBox.get()
-    route, transport_type = route[0], route[1] # Here I'm assuming that the routeButton will return a list of values
-                                               # but I may be wrong. If I'm correct, the first and second elements
-                                               # of that list should bRoute and Transit Type (as indicated in the picture).
+    def filter(self, p1=None, p2=None, transport_type=None, site=None):
+        """Given two prices, a transport type and site, return a list of tuples that represent the possible transits."""
+        # We can imagine that we'd get the parameters like thus (inside Beltline.py):
+        # p1, p2, transport_type, site = priceBox1.get(), priceBox2.get(), transportTypeDropdown.get(), containSiteDropdown.get()
 
-    try:
-        datetime.strptime(date, '%Y-%m-%d')
+        query = "SELECT * FROM transit_connect "
 
-    except:
-        # If this throws an error (incorrect date format), then we'd make an error window/popup to alert the User.
-        pass
+        if not any([p1, p2, transport_type, site]): #If no filter params are given
+            return self.load()
+        else:
+            query += "WHERE 1=1 " #1=1 is there so I can add AND to every if statement and
+                                  #not have to check if there should be an AND statement there
+        if p1 and p2:
+            query += f"AND Price BETWEEN {p1} AND {p2} "
+        elif p1:
+            query += f"AND Price >= {p1} "
+        elif p2:
+            query += f"AND Price <= {p2} "
 
-    cursor.execute(f"SELECT * FROM take WHERE Username = {username} AND Date = {date}")  # Where username is the login id that is in use.
-    if len(cursor.fetchall()) >= 1:
-        # Create a window/popup alerting the user they cannot take the same transit twice
-        break
+        if transport_type :
+            query += f"AND TransportType = {transport_type} "
 
-    else:
-        cursor.execute(f"INSERT INTO take VALUES ({username}, {transport_type}, {route}, {date})")
-        connection.commit()
+        if site:
+            query += f"AND SiteName = {site} "
 
+        with self.connection.cursor() as cursor:
+            cursor.execute(query + "GROUP BY TransportType, Route")
+            transits = cursor.fetchall()
+            transits = [tuple(d.values()) for d in transits]
+
+        return transits
+
+
+    def submit(self, route, transport_type, date):
+        """Given a route, transport_type, and date, submits an entry into the database. Returns 0 for a successful
+        submission, -1 if the User attempts to take the same transport on the same day twice, and -2 if the inputted
+        date is incorrect. """
+
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except:
+            # If this throws an error (incorrect date format), then we'd make an error window/popup to alert the User.
+            return -2
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM take WHERE Username = {username} AND Date = {date}")
+            if len(cursor.fetchall()) >= 1:
+                # Create a window/popup alerting the user they cannot take the same transit twice
+                return -1
+
+            else:
+                cursor.execute(f"INSERT INTO take VALUES ({username}, {transport_type}, {route}, {date})")
+                connection.commit()
+
+        return 0
 
 
 
 """(16) USER TRANSIT HISTORY"""
-# On load, we will retrieve all transits the user has taken
-with connection.cursor() as cursor:
-    cursor.execute(f"SELECT * FROM take WHERE Username = {username}")  # Where username is the login id that is in use.
-    transits = cursor.fetchall()
-    transits = []
+class UserTransitHistory:
+    def __init__(self, connection):
+        self.connection = connection
 
-    # We also need to grab a list of all the available sites for the "Contain Site" dropdown
-    cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-    sites = list(cursor.fetchall()[0].values())
+    def load(self, username):
+        """Given a username, returns a list of tuples that represents all of the transits a User has taken, and a list
+        of sites for the Contain Site filter dropdown."""
 
-# Then, we'd display all of the info inside the transits variable and populate the containSiteDropdown with the
-# stuff inside the sites variable.
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM take WHERE Username = {username}")
+            transits = cursor.fetchall()
+            transits = [tuple(d.values()) for d in transits]
 
-# The user may input items to filter, namely ContainSite, Price Range A and B, and Transport Type
-# We might imagine that, in our onTakeTransitFilter() function that is called after a button press, we
-# would run the following code:
-with connection.cursor() as cursor:
-    d1, d2, transport_type, site, route = dateBox1.get(), dateBox2.get(), transportTypeDropdown.get(), \
-                                          containSiteDropdown.get(), routeBox.get()
 
-    cursor.execute(f"SELECT * FROM take WHERE Username = {username} AND SiteName = {site} AND "
-                   f"Date BETWEEN {d1} AND {d2} AND TransportType = {transport_type} AND Route = {route}")
-    transits = cursor.fetchall()
+            cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
+            sites = list(cursor.fetchall()[0].values())
 
-# Then, we'd display this new info as we did before.
+        return transits, sites
+
+
+    def filter(self, username, d1=None, d2=None, transport_type=None, site=None, route=None):
+        """Given two days (as strings or datetime objects), a transport type, site, and route, return a list of tuples
+        that represents all of the transits a User has taken."""
+        #We can imagine that we'd get the parameters like the following:
+        #d1, d2, transport_type, site, route = dateBox1.get(), dateBox2.get(), transportTypeDropdown.get(), \
+        #                                      containSiteDropdown.get(), routeBox.get()
+
+        if type(d1) == str:  # Converts datetime object to string, just in case we ever pass in a datetime object.
+            d1 = d1.strftime('%Y-%m-%d')
+            d2 = d2.strftime('%Y-%m-%d')
+
+        query = f"SELECT * FROM take WHERE Username = {username} "
+        if d1 and d2:
+            query += f"AND Date BETWEEN {d1} AND {d2} "
+        elif d1:
+            query += f"AND Date >= {d1} "
+        elif d2:
+            query += f"AND Date <= {d2} "
+
+        if transport_type:
+            query += f"AND TransportType = {transport_type} "
+
+        if site:
+            query += f"AND SiteName = {site} "
+
+        if route:
+            query += f"AND Route = {route}"
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(query)
+            transits = cursor.fetchall()
+
+        return [tuple(d.values()) for d in transits]
+
 
 
 
@@ -144,26 +195,3 @@ with connection.cursor() as cursor:
 """
 """(17) EMPLOYEE MANAGE PROFILE"""
 
-# On load, we will retrieve all data and populate all entries for their profile
-with connection.cursor() as cursor:
-    cursor.execute(f"SELECT FirstName, LastName, EmpUsername, Phone, Address, City, State, Zipcode "
-                   f"FROM employee JOIN user ON EmpUsername = Username WHERE EmpUsername = {username}")
-    fname, lname, username, phone, street, city, state, zipcode = cursor.fetchall()[0].values()
-
-    address = f"{street}, {city}, {state}, {zipcode}"
-
-    cursor.execute(f"SELECT Email FROM email WHERE Username = {username}")
-    emails = [email for d in cursor.fetchall() for email in d.values()]
-
-    cursor.execute(f"SELECT * FROM manager WHERE ManUsername = {username}") # Get's the site if they're a manager
-    if cursor.fetchall():
-        cursor.execute(f"SELECT Name FROM site WHERE ManUsername = {username}")
-        site = cursor.fetchall()[0]['Name']
-
-    cursor.execute(f"SELECT * FROM visitor WHERE VisUsername = {username}")
-    if cursor.fetchall():
-        visitor = True
-    else:
-        visitor = False
-
-# Now we have address, visitor True/False, the Site (if they're a manager), name/phone/ID to display.
