@@ -1,21 +1,40 @@
-insert into user values ('james.smith', 'jsmith123', 'James', 'Smith', 'Approved');
-insert into user values ('michael.smith', 'msmith456', 'Michael', 'Smith', 'Approved');
-insert into user values ('robert.smith', 'rsmith789', 'Robert', 'Smith', 'Approved');
-insert into user values ('maria.garcia', 'mgarcia123', 'Maria', 'Garcia', 'Approved');
-insert into user values ('david.smith', 'dsmith456', 'David', 'Smith', 'Approved');
-insert into user values ('manager1', 'manager1', 'Manager', 'One', 'Pending');
-insert into user values ('manager2', 'manager2', 'Manager', 'Two', 'Approved');
-insert into user values ('manager3', 'manager3', 'Manager', 'Three', 'Approved');
-insert into user values ('manager4', 'manager4', 'Manager', 'Four', 'Approved');
-insert into user values ('manager5', 'manager5', 'Manager', 'Five', 'Approved');
-insert into user values ('maria.rodriguez', 'mrodriguez', 'Maria', 'Rodriguez', 'Declined');
-insert into user values ('mary.smith', 'msmith789', 'Mary', 'Smith', 'Approved');
-insert into user values ('maria.hernandez', 'mhernandez', 'Maria', 'Hernandez', 'Approved');
-insert into user values ('staff1', 'staff1234', 'Staff', 'One', 'Approved');
-insert into user values ('staff2', 'staff4567', 'Staff', 'Two', 'Approved');
-insert into user values ('staff3', 'staff7890', 'Staff', 'Three', 'Approved');
-insert into user values ('user1', 'user123456', 'User', 'One', 'Pending');
-insert into user values ('visitor1', 'visitor123', 'Visitor', 'One', 'Approved');
+-- pw jsmith123
+insert into user values ('james.smith', '7cf2e5f72d3e144cad58f95214f2dd20ad8f9979f34d561433a31dacbc16071b', 'James', 'Smith', 'Approved');
+-- pw msmith456
+insert into user values ('michael.smith', '6d3a26d88ea77a9b07d79a48307644cd88976173f49f279fed04b681d713a541', 'Michael', 'Smith', 'Approved');
+-- pw rsmith789
+insert into user values ('robert.smith', '232c98d6f01474e874341b78d28064ac6c318763dbf80b057e0ea116905c7fcc', 'Robert', 'Smith', 'Approved');
+-- pw mgarcia123
+insert into user values ('maria.garcia', 'ddbdea14aecce91cd12172bce09e9b402a29ea0c2813dc35935095ead340cc35', 'Maria', 'Garcia', 'Approved');
+-- pw dsmith456
+insert into user values ('david.smith', 'f79704e124b997b32bd83c014b05c20413c6a3e928ec8083bf1872c82c025672', 'David', 'Smith', 'Approved');
+-- pw manager1
+insert into user values ('manager1', '380f9771d2df8566ce2bd5b8ed772b0bb74fd6457fb803ab2d267c394d89c750', 'Manager', 'One', 'Pending');
+-- pw manager2
+insert into user values ('manager2', '9d05b6092d975b0884c6ba7fadb283ced03da9822ebbd13cc6b6d1855a6495ec', 'Manager', 'Two', 'Approved');
+-- pw manager3
+insert into user values ('manager3', '42385b24804a6609a2744d414e0bf945704427b256ab79144b9ba93f278dbea7', 'Manager', 'Three', 'Approved');
+-- pw manager4
+insert into user values ('manager4', 'e3c0f6e574f2e758a4d9d271fea62894230126062d74fd6d474e2046837f9bce', 'Manager', 'Four', 'Approved');
+-- pw manager5
+insert into user values ('manager5', '60c6fc387428b43201be7da60da59934acb080b254e4eebead657b54154fbeb1', 'Manager', 'Five', 'Approved');
+-- pw mrodriguez
+insert into user values ('maria.rodriguez', 'c50218388d572cbe6aac09b33ceb5189608d5b9ede429b5a17562a17fdd547c4', 'Maria', 'Rodriguez', 'Declined');
+-- pw msmith789
+insert into user values ('mary.smith', '9ddbd60268ae6987437511066a2000f1f0017c23728700f9794628a9d3d33034', 'Mary', 'Smith', 'Approved');
+-- pw mhernandez
+insert into user values ('maria.hernandez', '600d2690306308866676b4229d51e04857876021705362bf3b26b08a1f78f9cb', 'Maria', 'Hernandez', 'Approved');
+-- pw staff1234
+insert into user values ('staff1', '02defbfb8190f9d0719ef7a23da2049bd2e61442bc14021a6d8a4ae35ca334b7', 'Staff', 'One', 'Approved');
+-- pw staff4567
+insert into user values ('staff2', '6bd0987c664d5e7551004d30656ae1d12b9d262e2d128ba4200934b4116d96cd', 'Staff', 'Two', 'Approved');
+-- pw staff7890
+insert into user values ('staff3', '8857a879cbea64f2d20c6c1bfab505f4b23c06d28decb3b9ddc5426b75f469f1', 'Staff', 'Three', 'Approved');
+-- pw user123456
+insert into user values ('user1', '90aae915da86d3b3a4da7a996bc264bfbaf50a953cbbe8cd3478a2a6ccc7b900', 'User', 'One', 'Pending');
+-- pw visitor123
+insert into user values ('visitor1', '5c1e1b5c8936669bfe844210fb7ae7d3411dd9f41614d09ce9732dfc17c266bc', 'Visitor', 'One', 'Approved');
+
 
 insert into visitor values ('michael.smith');
 insert into visitor values ('maria.garcia');

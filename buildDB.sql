@@ -5,7 +5,7 @@ USE Beltline;
 
 CREATE TABLE User
    	 ( Username varchar(16) NOT NULL,
-   	   Password varchar(32) NOT NULL, 
+   	   Password varchar(64) NOT NULL, 
         	   
 FirstName varchar(32),
       	LastName varchar(32),
