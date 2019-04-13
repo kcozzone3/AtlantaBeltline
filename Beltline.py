@@ -292,15 +292,22 @@ class Beltline:
         confirmPasswordBox = Entry(userOnlyRegistrationWindow, textvariable=self.registrationConfirmPassword, width=20)
         confirmPasswordBox.grid(row=6, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
+        emailLabel = Label(userOnlyRegistrationWindow, text="Email(s)", background='#ffffff')
+        emailLabel.grid(row=7, column=1, padx=(2,5), pady=(0,4), sticky=W)
+
+        self.emailBox= Text(userOnlyRegistrationWindow, height=4, width=15, wrap=WORD)
+        self.emailBox.grid(row=7, column=2, padx=(0,2), pady=(0,4), sticky=E)
+        self.emailBox.insert("1.0", "Enter emails with 1 comma in between.\nEx: exampleOne@yahoo.com,example2@yahoo.com")
+
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(userOnlyRegistrationWindow, command=self.onUserOnlyRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(userOnlyRegistrationWindow, command=self.onUserOnlyRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=7, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=8, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onUserOnlyRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -314,11 +321,14 @@ class Beltline:
         username = self.registrationUserName.get()
         password = self.registrationPassword.get()
         confirmPassword = self.registrationConfirmPassword.get()
+        emailString = self.emailBox.get("1.0", "end-1c")
 
         if not firstName:
-            firstName = ""
+            messagebox.showwarning("Missing First Name", "The first name field is empty. Please try again.")
+            return
         if not lastName:
-            lastName = ""
+            messagebox.showwarning("Missing Last Name", "The last name field is empty. Please try again.")
+            return
 
         if not username:
             messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
@@ -353,8 +363,50 @@ class Beltline:
             messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
             return
 
+        emailList = []
+        while len(emailString)>0:
+            commaIndex = emailString.find(',')
+            if commaIndex > -1:
+                emailList.append(emailString[0:commaIndex])
+                emailString = emailString[commaIndex + 1:]
+            else:
+                emailList.append(emailString[0:])
+                emailString = ""
+        for email in emailList:
+            curEmail = email
+            if curEmail.find('\n') > -1:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. You have an enter character somewhere.")
+                return
+            atLocation = curEmail.find('@')
+            if atLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the @ character.")
+                return
+            beforeAt = email[0:atLocation]
+            afterAt = email[atLocation+1:]
+            periodLocation = afterAt.find('.')
+            if periodLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the . character.")
+                return
+            beforePeriodAfterAt = afterAt[0:periodLocation]
+            afterPeriod = afterAt[periodLocation + 1:]
+            if not beforeAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not beforePeriodAfterAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not afterPeriod.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            emailExists = self.cursor.execute("SELECT * from emails where Email=%s", curEmail)
+            if emailExists:
+                messagebox.showwarning("Email Already Taken", "An email you entered already exists within the database.")
+                return
+
         hashedPassword = self.encrypt(password)
         self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
+        for email in emailList:
+            self.cursor.execute("INSERT into emails values (%s, %s)", (username, email))
         messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
 
         self.userOnlyRegistrationWindow.destroy()
@@ -413,17 +465,24 @@ class Beltline:
         confirmPasswordBox = Entry(visitorOnlyRegistrationWindow, textvariable=self.registrationConfirmPassword, width=20)
         confirmPasswordBox.grid(row=6, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
+        emailLabel = Label(visitorOnlyRegistrationWindow, text="Email(s)", background='#ffffff')
+        emailLabel.grid(row=7, column=1, padx=(2,5), pady=(0,4), sticky=W)
+
+        self.emailBox= Text(visitorOnlyRegistrationWindow, height=4, width=15, wrap=WORD)
+        self.emailBox.grid(row=7, column=2, padx=(0,2), pady=(0,4), sticky=E)
+        self.emailBox.insert("1.0", "Enter emails with 1 comma in between.\nEx: exampleOne@yahoo.com,example2@yahoo.com")
+
 
 
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(visitorOnlyRegistrationWindow, command=self.onVisitorOnlyRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(visitorOnlyRegistrationWindow, command=self.onVisitorOnlyRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=7, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=8, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onVisitorOnlyRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -437,11 +496,14 @@ class Beltline:
         username = self.registrationUserName.get()
         password = self.registrationPassword.get()
         confirmPassword = self.registrationConfirmPassword.get()
+        emailString = self.emailBox.get("1.0", "end-1c")
 
         if not firstName:
-            firstName = ""
+            messagebox.showwarning("Missing First Name", "The first name field is empty. Please try again.")
+            return
         if not lastName:
-            lastName = ""
+            messagebox.showwarning("Missing Last Name", "The last name field is empty. Please try again.")
+            return
 
         if not username:
             messagebox.showwarning("Missing Username", "The username field is empty. Please try again.")
@@ -476,9 +538,51 @@ class Beltline:
             messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
             return
 
+        emailList = []
+        while len(emailString)>0:
+            commaIndex = emailString.find(',')
+            if commaIndex > -1:
+                emailList.append(emailString[0:commaIndex])
+                emailString = emailString[commaIndex + 1:]
+            else:
+                emailList.append(emailString[0:])
+                emailString = ""
+        for email in emailList:
+            curEmail = email
+            if curEmail.find('\n') > -1:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. You have an enter character somewhere.")
+                return
+            atLocation = curEmail.find('@')
+            if atLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the @ character.")
+                return
+            beforeAt = email[0:atLocation]
+            afterAt = email[atLocation+1:]
+            periodLocation = afterAt.find('.')
+            if periodLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the . character.")
+                return
+            beforePeriodAfterAt = afterAt[0:periodLocation]
+            afterPeriod = afterAt[periodLocation + 1:]
+            if not beforeAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not beforePeriodAfterAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not afterPeriod.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            emailExists = self.cursor.execute("SELECT * from emails where Email=%s", curEmail)
+            if emailExists:
+                messagebox.showwarning("Email Already Taken", "An email you entered already exists within the database.")
+                return
+
         hashedPassword = self.encrypt(password)
         self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
         self.cursor.execute("INSERT into visitor values (%s)", username)
+        for email in emailList:
+            self.cursor.execute("INSERT into emails values (%s, %s)", (username, email))
         messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
 
         self.visitorOnlyRegistrationWindow.destroy()
@@ -589,15 +693,22 @@ class Beltline:
         zipBox = Entry(employeeOnlyRegistrationWindow, textvariable=self.registrationZIP, width=20)
         zipBox.grid(row=12, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
+        emailLabel = Label(employeeOnlyRegistrationWindow, text="Email(s)", background='#ffffff')
+        emailLabel.grid(row=13, column=1, padx=(2,5), pady=(0,4), sticky=W)
+
+        self.emailBox= Text(employeeOnlyRegistrationWindow, height=4, width=15, wrap=WORD)
+        self.emailBox.grid(row=13, column=2, padx=(0,2), pady=(0,4), sticky=E)
+        self.emailBox.insert("1.0", "Enter emails with 1 comma in between.\nEx: exampleOne@yahoo.com,example2@yahoo.com")
+
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(employeeOnlyRegistrationWindow, command=self.onEmployeeOnlyRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=14, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(employeeOnlyRegistrationWindow, command=self.onEmployeeOnlyRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=13, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=14, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onEmployeeOnlyRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -610,6 +721,7 @@ class Beltline:
         username = self.registrationUserName.get()
         password = self.registrationPassword.get()
         confirmPassword = self.registrationConfirmPassword.get()
+        emailString = self.emailBox.get("1.0", "end-1c")
 
         employeeType = self.registrationEmployeeType.get()
         state = self.registrationState.get()
@@ -619,17 +731,23 @@ class Beltline:
         zipcode = self.registrationZIP.get()
 
         if not firstName:
-            firstName = ""
+            messagebox.showwarning("Missing First Name", "The first name field is empty. Please try again.")
+            return
         if not lastName:
-            lastName = ""
+            messagebox.showwarning("Missing Last Name", "The last name field is empty. Please try again.")
+            return
         if not state:
-            state = ""
+            messagebox.showwarning("Missing State", "The state field is empty. Please try again.")
+            return
         if not address:
-            address = ""
+            messagebox.showwarning("Missing Address", "The address field is empty. Please try again.")
+            return
         if not city:
-            city = ""
+            messagebox.showwarning("Missing City", "The city field is empty. Please try again.")
+            return
         if not zipcode:
-            zipcode = ""
+            messagebox.showwarning("Missing Zipcode", "The zipcode field is empty. Please try again.")
+            return
         if not confirmPassword:
             confirmPassword = ""
 
@@ -690,11 +808,51 @@ class Beltline:
         phoneExists = self.cursor.execute("SELECT * from employee where Phone=%s", phone)
         if phoneExists:
             messagebox.showwarning("Phone Already Registered", "This phone number is already registered.")
+            return
 
         empId = random.randint(1, 999999999)
         while self.cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
             empId = random.randint(1, 999999999)
 
+        emailList = []
+        while len(emailString)>0:
+            commaIndex = emailString.find(',')
+            if commaIndex > -1:
+                emailList.append(emailString[0:commaIndex])
+                emailString = emailString[commaIndex + 1:]
+            else:
+                emailList.append(emailString[0:])
+                emailString = ""
+        for email in emailList:
+            curEmail = email
+            if curEmail.find('\n') > -1:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. You have an enter character somewhere.")
+                return
+            atLocation = curEmail.find('@')
+            if atLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the @ character.")
+                return
+            beforeAt = email[0:atLocation]
+            afterAt = email[atLocation+1:]
+            periodLocation = afterAt.find('.')
+            if periodLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the . character.")
+                return
+            beforePeriodAfterAt = afterAt[0:periodLocation]
+            afterPeriod = afterAt[periodLocation + 1:]
+            if not beforeAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not beforePeriodAfterAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not afterPeriod.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            emailExists = self.cursor.execute("SELECT * from emails where Email=%s", curEmail)
+            if emailExists:
+                messagebox.showwarning("Email Already Taken", "An email you entered already exists within the database.")
+                return
 
         hashedPassword = self.encrypt(password)
         self.cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)", (username, hashedPassword, firstName, lastName, "Pending"))
@@ -705,7 +863,10 @@ class Beltline:
         elif employeeType == "Staff":
             self.cursor.execute("INSERT into staff values (%s)", username)
         else:
-            messagebox.showwarning("Uhh", "You shouldn't be here: employee-visitor")
+            messagebox.showwarning("Uhh", "You shouldn't be here: employee")
+
+        for email in emailList:
+            self.cursor.execute("INSERT into emails values (%s, %s)", (username, email))
 
         messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
 
@@ -815,15 +976,22 @@ class Beltline:
         zipBox = Entry(employeeVisitorRegistrationWindow, textvariable=self.registrationZIP, width=20)
         zipBox.grid(row=12, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
+        emailLabel = Label(employeeVisitorRegistrationWindow, text="Email(s)", background='#ffffff')
+        emailLabel.grid(row=13, column=1, padx=(2,5), pady=(0,4), sticky=W)
+
+        self.emailBox= Text(employeeVisitorRegistrationWindow, height=4, width=15, wrap=WORD)
+        self.emailBox.grid(row=13, column=2, padx=(0,2), pady=(0,4), sticky=E)
+        self.emailBox.insert("1.0", "Enter emails with 1 comma in between.\nEx: exampleOne@yahoo.com,example2@yahoo.com")
+
         #EMAIL NOT CURRENTLY IMPLEMENTED
 
         backButton = Button(employeeVisitorRegistrationWindow, command=self.onEmployeeVisitorRegistrationBackButtonClicked, text="Back",
                             background='#4286f4')
-        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=14, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         registerButton = Button(employeeVisitorRegistrationWindow, command=self.onEmployeeVisitorRegistrationRegisterButtonClicked, text="Register",
                             background='#4286f4')
-        registerButton.grid(row=13, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        registerButton.grid(row=14, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onEmployeeVisitorRegistrationBackButtonClicked(self):
         self.initRegistrationNavigationWindow()
@@ -836,6 +1004,7 @@ class Beltline:
         username = self.registrationUserName.get()
         password = self.registrationPassword.get()
         confirmPassword = self.registrationConfirmPassword.get()
+        emailString = self.emailBox.get("1.0", "end-1c")
 
         employeeType = self.registrationEmployeeType.get()
         state = self.registrationState.get()
@@ -845,17 +1014,23 @@ class Beltline:
         zipcode = self.registrationZIP.get()
 
         if not firstName:
-            firstName = ""
+            messagebox.showwarning("Missing First Name", "The first name field is empty. Please try again.")
+            return
         if not lastName:
-            lastName = ""
+            messagebox.showwarning("Missing Last Name", "The last name field is empty. Please try again.")
+            return
         if not state:
-            state = ""
+            messagebox.showwarning("Missing State", "The state field is empty. Please try again.")
+            return
         if not address:
-            address = ""
+            messagebox.showwarning("Missing Address", "The address field is empty. Please try again.")
+            return
         if not city:
-            city = ""
+            messagebox.showwarning("Missing City", "The city field is empty. Please try again.")
+            return
         if not zipcode:
-            zipcode = ""
+            messagebox.showwarning("Missing Zipcode", "The zipcode field is empty. Please try again.")
+            return
         if not confirmPassword:
             confirmPassword = ""
 
@@ -916,10 +1091,51 @@ class Beltline:
         phoneExists = self.cursor.execute("SELECT * from employee where Phone=%s", phone)
         if phoneExists:
             messagebox.showwarning("Phone Already Registered", "This phone number is already registered.")
+            return
 
         empId = random.randint(1, 999999999)
         while self.cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
             empId = random.randint(1, 999999999)
+
+        emailList = []
+        while len(emailString)>0:
+            commaIndex = emailString.find(',')
+            if commaIndex > -1:
+                emailList.append(emailString[0:commaIndex])
+                emailString = emailString[commaIndex + 1:]
+            else:
+                emailList.append(emailString[0:])
+                emailString = ""
+        for email in emailList:
+            curEmail = email
+            if curEmail.find('\n') > -1:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. You have an enter character somewhere.")
+                return
+            atLocation = curEmail.find('@')
+            if atLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the @ character.")
+                return
+            beforeAt = email[0:atLocation]
+            afterAt = email[atLocation+1:]
+            periodLocation = afterAt.find('.')
+            if periodLocation < 0:
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong. Some email(s) is missing the . character.")
+                return
+            beforePeriodAfterAt = afterAt[0:periodLocation]
+            afterPeriod = afterAt[periodLocation + 1:]
+            if not beforeAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not beforePeriodAfterAt.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            if not afterPeriod.isalnum():
+                messagebox.showwarning("Email Error", "The format of your email(s) is wrong.")
+                return
+            emailExists = self.cursor.execute("SELECT * from emails where Email=%s", curEmail)
+            if emailExists:
+                messagebox.showwarning("Email Already Taken", "An email you entered already exists within the database.")
+                return
 
 
         hashedPassword = self.encrypt(password)
@@ -932,6 +1148,9 @@ class Beltline:
             self.cursor.execute("INSERT into staff values (%s)", username)
         else:
             messagebox.showwarning("Uhh", "You shouldn't be here: employee-visitor")
+
+        for email in emailList:
+            self.cursor.execute("INSERT into emails values (%s, %s)", (username, email))
 
         messagebox.showwarning("Registration Successful", "You are now registered. You will need to wait for administrator approval to login.")
 
