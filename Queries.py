@@ -63,7 +63,7 @@ class UserTakeTransit:
             transits = [tuple(d.values()) for d in transits]
 
             cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-            sites = list(cursor.fetchall()[0].values())
+            sites = [i for d in cursor.fetchall() for i in list(d.values())]
 
         return transits, sites
 
@@ -141,7 +141,7 @@ class UserTransitHistory:
 
 
             cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-            sites = list(cursor.fetchall()[0].values())
+            sites = [i for d in cursor.fetchall() for i in list(d.values())]
 
         return transits, sites
 
@@ -177,8 +177,9 @@ class UserTransitHistory:
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             transits = cursor.fetchall()
+            transits = [tuple(d.values()) for d in transits]
 
-        return [tuple(d.values()) for d in transits]
+        return transits
 
 
 
