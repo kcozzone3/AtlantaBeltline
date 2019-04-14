@@ -11,7 +11,7 @@ from datetime import datetime
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Dihydrogen_sulfate'
+MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
 #######################################
 
 
