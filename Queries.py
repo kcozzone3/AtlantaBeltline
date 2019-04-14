@@ -50,7 +50,7 @@ SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as "# Connec
 
 """(15) USER TAKE TRANSIT"""
 
-class UserTakeTransit:
+class TakeTransit:
     def __init__(self, connection):
         self.connection = connection
 
@@ -100,7 +100,7 @@ class UserTakeTransit:
         return transits
 
 
-    def submit(self, route, transport_type, date):
+    def submit(self, route, transport_type, date, username):
         """Given a route, transport_type, and date, submits an entry into the database. Returns 0 for a successful
         submission, -1 if the User attempts to take the same transport on the same day twice, and -2 if the inputted
         date is incorrect. """
@@ -119,7 +119,7 @@ class UserTakeTransit:
 
             else:
                 cursor.execute(f"INSERT INTO take VALUES ({username}, {transport_type}, {route}, {date})")
-                connection.commit()
+                self.connection.commit()
 
         return 0
 
