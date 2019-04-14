@@ -30,7 +30,7 @@ Also, I rename some of the columns in this view because it might save us a few l
 display each column.
 
 CREATE VIEW transit_connect AS
-SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as "# Connected Sites"
+SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
     FROM transit AS T JOIN connect AS C 
                       ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
                       JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
@@ -55,30 +55,45 @@ class TakeTransit:
         self.connection = connection
 
     def load(self):
-        """Returns a list of tuples that represents all transits, and a list of sites (for the Contain Site filter
+        """Returns a dict for col names, and a list of sites (for the Contain Site filter
         dropdown."""
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM transit_connect GROUP BY TransportType")
-            transits = cursor.fetchall()
-            transits = [tuple(d.values()) for d in transits]
+            cursor.execute("SELECT Route, TransportType, Price, NumSites as '# Connected Sites' "
+                           "FROM transit_connect GROUP BY TransportType")  # Yes, inefficient since we're only
+            transits = cursor.fetchall()                                   # displaying a blank table on loadup. But,
+                                                                           # it still gets the col names :/
+            for i in transits:
+                for key in i:
+                    i[key] = ""
+
+            transits = {1: transits[1]}  # Returns just col names, as we have to load a blank table to start with.
 
             cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
             sites = [i for d in cursor.fetchall() for i in list(d.values())]
 
         return transits, sites
 
-    def filter(self, p1=None, p2=None, transport_type=None, site=None):
+    def filter(self, p1=None, p2=None, site=None, transport_type=None):
         """Given two prices, a transport type and site, return a list of tuples that represent the possible transits."""
         # We can imagine that we'd get the parameters like thus (inside Beltline.py):
         # p1, p2, transport_type, site = priceBox1.get(), priceBox2.get(), transportTypeDropdown.get(), containSiteDropdown.get()
 
-        query = "SELECT * FROM transit_connect "
+        query = "SELECT Route, TransportType, Price, NumSites as '# Connected Sites' FROM transit_connect "
 
-        if not any([p1, p2, transport_type, site]): #If no filter params are given
-            return self.load()
+        if not any([p1, p2, transport_type, site]):  # If no filter params are given
+            with self.connection.cursor() as cursor:
+                cursor.execute(query + 'GROUP BY TransportType, Route')
+                transits = cursor.fetchall()
+
+                for i in transits:
+                    for key in i:
+                        i[key] = str(i[key])
+                transits = {i+1: transits[i] for i in range(len(transits))}
+
+                return transits
         else:
-            query += "WHERE 1=1 " #1=1 is there so I can add AND to every if statement and
-                                  #not have to check if there should be an AND statement there
+            query += "WHERE 1=1 "  # 1=1 is there so I can add AND to every if statement and
+                                   # not have to check if there should be an AND statement there
         if p1 and p2:
             query += f"AND Price BETWEEN {p1} AND {p2} "
         elif p1:
@@ -86,17 +101,25 @@ class TakeTransit:
         elif p2:
             query += f"AND Price <= {p2} "
 
-        if transport_type :
-            query += f"AND TransportType = {transport_type} "
+        if transport_type:
+            query += f"AND TransportType = '{transport_type}' "
 
         if site:
-            query += f"AND SiteName = {site} "
+            query += f"AND SiteName = '{site}' "
 
         with self.connection.cursor() as cursor:
+            print(query + "GROUP BY TransportType, Route")
             cursor.execute(query + "GROUP BY TransportType, Route")
             transits = cursor.fetchall()
-            transits = [tuple(d.values()) for d in transits]
 
+        for i in transits:
+            for key in i:
+                i[key] = str(i[key])
+        transits = {i+1: transits[i] for i in range(len(transits))}
+
+        if transits == {}:
+            transits = self.load()[0]  # Why does .fetchall() return an empty tuple if there are no results?
+        print(transits)
         return transits
 
 
@@ -137,8 +160,6 @@ class UserTransitHistory:
         with self.connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM take WHERE Username = {username}")
             transits = cursor.fetchall()
-            transits = [tuple(d.values()) for d in transits]
-
 
             cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
             sites = [i for d in cursor.fetchall() for i in list(d.values())]
@@ -177,7 +198,6 @@ class UserTransitHistory:
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             transits = cursor.fetchall()
-            transits = [tuple(d.values()) for d in transits]
 
         return transits
 

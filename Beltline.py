@@ -8,8 +8,10 @@ import hashlib
 import random
 from datetime import datetime
 
+from tkintertable import TableCanvas, TableModel
 
-# PUT PASSWORD HERE
+
+# PUT MYSQL PASSWORD HERE
 #######################################
 MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
 #######################################
@@ -35,7 +37,9 @@ class Login(Toplevel):
 
     def display(self):
         self.loginUsername = StringVar()
+        self.loginUsername.set('visitor1')
         self.loginPassword = StringVar()
+        self.loginPassword.set('visitor123')
 
         # create a label (text) on the login window with the text of login with certain other properties
         loginLabel = Label(self, text="Login", font="Helvetica", foreground='#000000', background='#ffffff')
@@ -1248,20 +1252,57 @@ class TakeTransit(Toplevel):
     def display(self):
         transits, sites = self.SQL.load()
 
-        self.route, self.d1, self.d2 = StringVar(), StringVar(), StringVar()
+        self.route, self.p1, self.p2 = StringVar(), StringVar(), StringVar()
         self.sites, self.ttype = StringVar(), StringVar()
 
+        self.sites.set('Any')
+        self.ttype.set('Any')
+
+        self.resultTable = TableCanvas(self, editable=True, data=transits,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(transits), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(transits.values())[0]), height=25*7)
+        #self.resultTable.grid(row=0, column=0, rowspan=10, sticky=W + E)
+        self.resultTable.show()
 
         takeTransitLabel = Label(self, text="Take Transit", font="Helvetica", foreground='#000000', background='#ffffff')
-        takeTransitLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+        takeTransitLabel.grid(row=0, column=0, padx=(4, 4), pady=(2, 2), sticky=W + E)
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=10, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
-        takeTransitLabel = Label(self, text="Take Transit", font="Helvetica", foreground='#000000', background='#ffffff')
-        takeTransitLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+        siteLabel = Label(self, text="Contains Site", font="Helvetica", foreground='#000000', background='#ffffff')
+        siteLabel.grid(row=0, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
+        siteDropdown = OptionMenu(self, self.sites, *sites + ['Any'])
+        siteDropdown.grid(row=0, column=3, padx=(2, 5), pady=(0, 4))
 
-        siteDropdown = OptionMenu(self, self.sites, *sites + ['All'])
+        ttypeLabel = Label(self, text="Transport Type", font="Helvetica", foreground='#000000', background='#ffffff')
+        ttypeLabel.grid(row=1, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
+        ttypeDropdown = OptionMenu(self, self.ttype, *['MARTA', 'Bus', 'Bike', 'Any'])
+        ttypeDropdown.grid(row=1, column=3, padx=(2, 5), pady=(0, 4))
+
+        priceLabel = Label(self, text="Price Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        priceLabel.grid(row=2, column=2, padx=(2, 2), pady=(2, 2), sticky=W)
+        p1Box = Entry(self, textvariable=self.p1,  width=5)
+        p1Box.grid(row=2, column=3, padx=(2, 2), pady=(2, 2), sticky=W)
+        p2Box = Entry(self, textvariable=self.p2,  width=5)
+        p2Box.grid(row=2, column=3, padx=(2, 2), pady=(2, 2), sticky=E)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=3, column=2, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+
+    def filter(self, sort=False):
+        p1, p2, site, ttype = self.p1.get(), self.p2.get(), self.sites.get(), self.ttype.get()
+
+        conv = {'': None, 'Any': None}
+        p1, p2, site, ttype = conv.get(p1, p1), conv.get(p2, p2), conv.get(site, site), conv.get(ttype, ttype)
+
+        transits = self.SQL.filter(p1, p2, site, ttype)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(transits)
+        self.resultTable.redraw()
 
     def back(self):
         self.master.deiconify()
@@ -1290,7 +1331,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(e)
         print('Error! Cannot connect. Please double check the password variable to your MySQL server at the top of '
-              'the file.')
+              'this file.')
         sys.exit()
 
     print("Connected!")
