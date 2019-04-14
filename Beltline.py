@@ -11,7 +11,7 @@ from datetime import datetime
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = '***REMOVED***'
+MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
 #######################################
 
 
