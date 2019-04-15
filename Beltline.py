@@ -11,7 +11,7 @@ from datetime import datetime
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'bryant'
+MYSQL_PASSWORD = '9A4q372X4m'
 #######################################
 
 
@@ -34,7 +34,7 @@ class Login(Toplevel):
         self.config(background='#ffffff')
 
     def display(self):
-        self.loginUsername = StringVar()
+        self.loginEmail = StringVar()
         self.loginPassword = StringVar()
 
         # create a label (text) on the login window with the text of login with certain other properties
@@ -45,16 +45,16 @@ class Login(Toplevel):
         loginLabel.grid(row=1, column=2, pady=(2, 6), sticky=W)
 
         # create a username label and place in the grid
-        usernameLabel = Label(self, text="Username", foreground='#000000', background='#ffffff')
-        usernameLabel.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+        emailLabel = Label(self, text="Email", foreground='#000000', background='#ffffff')
+        emailLabel.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         # create a username entry box, accounting for the inputted text to be the login username. We also set a width
         # for how many characters can be easily displayed
-        usernameBox = Entry(self, textvariable=self.loginUsername, width=20)
-        usernameBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        emailBox = Entry(self, textvariable=self.loginEmail, width=20)
+        emailBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
 
         # Password Label creation
-        passwordLabel = Label(self, text="Password ", foreground='#000000', background='#ffffff')
+        passwordLabel = Label(self, text="Password", foreground='#000000', background='#ffffff')
         passwordLabel.grid(row=4, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
         # Password Entry Box creation: difference to username is the show='*', which displays *** instead of abc
@@ -74,11 +74,11 @@ class Login(Toplevel):
         registerWindow.display()
 
     def onLoginButtonClicked(self):
-        self.username = self.loginUsername.get()
+        self.email = self.loginEmail.get()
         self.password = self.loginPassword.get()
 
-        if not self.username:
-            messagebox.showwarning("Username Field Empty", "The username field is empty. Please try again.")
+        if not self.email:
+            messagebox.showwarning("Email Field Empty", "The email field is empty. Please try again.")
             return
 
         if not self.password:
@@ -86,25 +86,33 @@ class Login(Toplevel):
             return
 
         hashedPassword = encrypt(self.password)
-        usernameValid = cursor.execute("SELECT * FROM user where EXISTS (SELECT * FROM user where Username=%s)",
-                                          self.username)
+        usernameValid = cursor.execute("SELECT Username FROM user where Username = (SELECT Username FROM emails where Email=%s)",
+                                          self.email)
 
         if usernameValid == 0:
-            messagebox.showwarning("Username Invalid", "This username is not registered in the system.")
+            messagebox.showwarning("Email Invalid", "This email is not registered in the system.")
             return
+        else:
+            results = cursor.fetchone()
+            username = results['Username']
+            print(results['Username'])
+
 
         passwordMatching = cursor.execute(
             "SELECT * FROM user where EXISTS (SELECT * FROM user where (Username=%s and Password=%s))",
-            (self.username, hashedPassword))
+            (username, hashedPassword))
 
         if passwordMatching == 0:
             messagebox.showwarning("Invalid Login",
-                                   "This username and password combination is not registered in the system.")
+                                   "This email and password combination is not registered in the system.")
             return
 
-        cursor.execute("SELECT status FROM user where Username=%s", self.username)
+        cursor.execute("SELECT status FROM user where Username=%s", username)
         accountStatus = cursor.fetchone()
         accountStatus = accountStatus.get('status').lower()
+
+        global identifier
+        identifier = username
 
         if accountStatus == "declined":
             messagebox.showwarning("Banned Account", "Your account has been banned. Please contact an administrator.")
@@ -114,17 +122,17 @@ class Login(Toplevel):
             return
 
         isVisitor = cursor.execute("SELECT * FROM visitor where EXISTS (SELECT * FROM visitor where VisUsername=%s)",
-                                      self.username)
+                                      username)
         isEmployee = cursor.execute(
-            "SELECT * FROM employee where EXISTS (SELECT * FROM employee where EmpUsername=%s)", self.username)
+            "SELECT * FROM employee where EXISTS (SELECT * FROM employee where EmpUsername=%s)", username)
         if isEmployee:
             isAdmin = cursor.execute(
                 "SELECT * FROM administrator where EXISTS (SELECT * FROM administrator where AdminUsername=%s)",
-                self.username)
+                username)
             isManager = cursor.execute(
-                "SELECT * FROM manager where EXISTS (SELECT * FROM manager where ManUsername=%s)", self.username)
+                "SELECT * FROM manager where EXISTS (SELECT * FROM manager where ManUsername=%s)", username)
             isStaff = cursor.execute("SELECT * FROM staff where EXISTS (SELECT * FROM staff where StaffUsername=%s)",
-                                        self.username)
+                                        username)
 
         if isVisitor:
             if isEmployee:
