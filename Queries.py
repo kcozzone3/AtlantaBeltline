@@ -73,13 +73,13 @@ class TakeTransit:
 
         return transits, sites
 
-    def filter(self, p1=None, p2=None, site=None, transport_type=None):
+    def filter(self, p1=None, p2=None, site=None, transport_type=None, sort='TransportType'):
         """Given two prices, a transport type and site, return a list of tuples that represent the possible transits."""
         # We can imagine that we'd get the parameters like thus (inside Beltline.py):
         # p1, p2, transport_type, site = priceBox1.get(), priceBox2.get(), transportTypeDropdown.get(), containSiteDropdown.get()
 
         query = "SELECT Route, TransportType, Price, NumSites as '# Connected Sites' FROM transit_connect "
-
+        print(sort)
         if not any([p1, p2, transport_type, site]):  # If no filter params are given
             with self.connection.cursor() as cursor:
                 cursor.execute(query + 'GROUP BY TransportType, Route')
@@ -107,9 +107,12 @@ class TakeTransit:
         if site:
             query += f"AND SiteName = '{site}' "
 
+        query += f'GROUP BY TransportType, Route ORDER BY {sort} ASC'
+
+
         with self.connection.cursor() as cursor:
-            print(query + "GROUP BY TransportType, Route")
-            cursor.execute(query + "GROUP BY TransportType, Route")
+            print(query)
+            cursor.execute(query)
             transits = cursor.fetchall()
 
         for i in transits:

@@ -7,13 +7,14 @@ import Queries
 import hashlib
 import random
 from datetime import datetime
+from functools import partial
 
 from tkintertable import TableCanvas, TableModel
 
 
 # PUT MYSQL PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
+MYSQL_PASSWORD = 'Dihydrogen_sulfate'
 #######################################
 
 
@@ -1288,17 +1289,34 @@ class TakeTransit(Toplevel):
         p2Box = Entry(self, textvariable=self.p2,  width=5)
         p2Box.grid(row=2, column=3, padx=(2, 2), pady=(2, 2), sticky=E)
 
-        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        sortDefault = partial(self.filter, 'TransportType')
+        filterButton = Button(self, command=sortDefault, text="Filter", background='#4286f4')
         filterButton.grid(row=3, column=2, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
+        sortType = partial(self.filter, 'TransportType')
+        sortTypeButton = Button(self, command=sortType, text="Sort by Transit Type", background='#4286f4')
+        sortTypeButton.grid(row=4, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
-    def filter(self, sort=False):
+        sortSite = partial(self.filter, 'SiteName')
+        sortSiteButton = Button(self, command=sortSite, text="Sort by Site", background='#4286f4')
+        sortSiteButton.grid(row=5, column=2, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortPrice = partial(self.filter, 'Price')
+        sortPriceButton = Button(self, command=sortPrice, text="Sort by Price", background='#4286f4')
+        sortPriceButton.grid(row=6, column=2, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortSites = partial(self.filter, 'NumSites')
+        sortSitesButton = Button(self, command=sortSites, text="Sort by Number of Sites", background='#4286f4')
+        sortSitesButton.grid(row=7, column=2, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+
+    def filter(self, sort):
         p1, p2, site, ttype = self.p1.get(), self.p2.get(), self.sites.get(), self.ttype.get()
 
         conv = {'': None, 'Any': None}
         p1, p2, site, ttype = conv.get(p1, p1), conv.get(p2, p2), conv.get(site, site), conv.get(ttype, ttype)
 
-        transits = self.SQL.filter(p1, p2, site, ttype)
+        transits = self.SQL.filter(p1, p2, site, ttype, sort)
 
         self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
         self.resultTable.model.importDict(transits)
