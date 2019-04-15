@@ -11,7 +11,7 @@ from datetime import datetime
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
+MYSQL_PASSWORD = 'bryant'
 #######################################
 
 
@@ -129,11 +129,18 @@ class Login(Toplevel):
         if isVisitor:
             if isEmployee:
                 if isAdmin:
-                    messagebox.showwarning("Administrator-Visitor", "Admin-Visitor Functionality not added yet.")
+                    pass
+                    administratorVisitorFunctionalityWindow = AdministratorVisitorFunctionality(self)
+                    self.withdraw()
+                    administratorVisitorFunctionalityWindow.display()
                 elif isManager:
-                    messagebox.showwarning("Manager-Visitor", "Manager-Visitor Functionality not added yet.")
+                    managerVisitorFunctionalityWindow = ManagerVisitorFunctionality(self)
+                    self.withdraw()
+                    managerVisitorFunctionalityWindow.display()
                 elif isStaff:
-                    messagebox.showwarning("Staff-Visitor", "Staff-Visitor Functionality not added yet.")
+                    staffVisitorFunctionalityWindow = StaffVisitorFunctionality(self)
+                    self.withdraw()
+                    staffVisitorFunctionalityWindow.display()
                 else:
                     messagebox.showwarning("Uhhh", "You shouldn't be here (employee-visitor).")
             else:
@@ -144,18 +151,24 @@ class Login(Toplevel):
 
         elif isEmployee:
             if isAdmin:
-                messagebox.showwarning("Administrator", "Admin Functionality not added yet.")
+                administratorFunctionalityWindow = AdministratorFunctionality(self)
+                self.withdraw()
+                administratorFunctionalityWindow.display()
             elif isManager:
-                messagebox.showwarning("Manager", "Manager Functionality not added yet.")
+                managerFunctionalityWindow = ManagerFunctionality(self)
+                self.withdraw()
+                managerFunctionalityWindow.display()
             elif isStaff:
-                messagebox.showwarning("Staff", "Staff Functionality not added yet.")
+                staffFunctionalityWindow = StaffFunctionality(self)
+                self.withdraw()
+                staffFunctionalityWindow.display()
             else:
                 messagebox.showwarning("Uhhh", "You shouldn't be here (employee).")
         else:
             # Just a user
             userFunctionalityWindow = UserFunctionality(self)
             self.withdraw()
-            userFunctionalityWindow.deiconify()
+            userFunctionalityWindow.display()
 
 
 class RegistrationNav(Toplevel):
@@ -1166,7 +1179,9 @@ class UserFunctionality(Toplevel):
         TakeTransitWindow.display()
 
     def onTransitHistoryButtonClicked(self):
-        pass
+        TransitHistoryWindow = TransitHistory(self)
+        self.withdraw()
+        TransitHistoryWindow.display()
         # TODO
 
 
@@ -1217,6 +1232,31 @@ class VisitorFunctionality(Toplevel):
 
     def onVisitorFunctionalityExploreEventButtonClicked(self):
         pass
+        """
+        def __init__(self, master):
+            Toplevel.__init__(self)
+            self.master = master
+            self.title('ExploreEvent -- Visitor')
+            self.config(background='#ffffff')
+
+        def display(self):
+            self.eventName = StringVar()
+            self.registrationLastName = StringVar()
+            self.registrationUserName = StringVar()
+            self.registrationPassword = StringVar()
+            self.registrationConfirmPassword = StringVar()
+
+            registerLabel = Label(self, text="User Only Registration", font="Helvetica",
+                              foreground='#000000', background='#ffffff')
+            registerLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E, columnspan=2)
+
+            firstNameLabel = Label(self, text="First Name", background='#ffffff')
+            firstNameLabel.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+
+            firstNameBox = Entry(self, textvariable=self.registrationFirstName, width=20)
+            firstNameBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+            """
+
         #TODO
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
@@ -1235,6 +1275,354 @@ class VisitorFunctionality(Toplevel):
     def onTransitHistoryButtonClicked(self):
         pass
         # TODO
+
+class AdministratorFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Adminstrator-Only')
+        self.config(background='#ffffff')
+
+    def display(self):
+        administratorFunctionalityLabel = Label(self, text="Administrator Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        administratorFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        adminmanageProfileButton = Button(self,command=self.onAdminManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        manageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminmanageUserButton = Button(self,command=self.onAdminManageUserButtonClicked,text="Manage User", background='#4286f4')
+        adminmanageUserButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminmanageTransitButton = Button(self,command=self.onAdminManageTransitButtonClicked,text="Manage Transit", background='#4286f4')
+        adminmanageTransitButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminmanageSiteButton = Button(self, command=self.onAdminManageSiteButtonClicked,text="Manage Site", background='#4286f4')
+        adminmanageSiteButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        admintakeTransitButton = Button(self,command=self.onAdminTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        admintakeTransitButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminviewTransitHistoryButton = Button(self,command=self.onAdminViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        adminviewTransitHistoryButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        administratorBackButton = Button(self, command=self.onAdministratorFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        administratorBackButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onAdminManageProfileButtonClicked(self):
+        pass
+
+    def onAdminManageUserButtonClicked(self):
+        pass
+
+    def onAdminManageTransitButtonClicked(self):
+        pass
+
+    def onAdminManageSiteButtonClicked(self):
+        pass
+
+    def onAdminTakeTransitButtonClicked(self):
+        pass
+
+    def onAdminViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onAdministratorFunctionalityBackButtonClicked(self):
+        pass
+
+class AdministratorVisitorFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Adminstrator-Visitor')
+        self.config(background='#ffffff')
+
+    def display(self):
+        administratorVisitorFunctionalityLabel = Label(self, text="Administrator Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        administratorVisitorFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        adminVisitorManageProfileButton = Button(self,command=self.onAdminManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        adminVisitorManageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorManageUserButton = Button(self,command=self.onAdminVisitorManageUserButtonClicked, text="Manage User",background='#4286f4')
+        adminVisitorManageUserButton.grid(row=2, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorManageTransitButton = Button(self,command=self.onAdminVisitorManageTransitButtonClicked,text="Manage Transit", background='#4286f4')
+        adminVisitorManageTransitButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorTakeTransitButton = Button(self,command=self.onAdminVisitorTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        adminVisitorTakeTransitButton.grid(row=3, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorManageSiteButton = Button(self,command=self.onAdminVisitorManageSiteButtonClicked,text="Manage Site", background='#4286f4')
+        adminVisitorManageSiteButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorExploreSiteButton = Button(self, command=self.onAdminVisitorExploreSiteButtonClicked,text="Explore Site", background='#4286f4')
+        adminVisitorExploreSiteButton.grid(row=4, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorExploreEventButton = Button(self,command=self.onAdminVisitorExploreEventButtonClicked,text="Explore Event", background='#4286f4')
+        adminVisitorExploreEventButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorViewVisitHistoryButton = Button(self,command=self.onAdminVisitorViewVisitHistoryButtonClicked,text="View Visit History", background='#4286f4')
+        adminVisitorViewVisitHistoryButton.grid(row=5, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        adminVisitorViewTransitHistoryButton = Button(self,command=self.onAdminVisitorViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        adminVisitorViewTransitHistoryButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        administratorBackButton = Button(self, command=self.onAdministratorFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        administratorBackButton.grid(row=6, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onAdminVisitorManageProfileButtonClicked(self):
+        pass
+
+    def onAdminVisitorManageUserButtonClicked(self):
+        pass
+
+    def onAdminVisitorTakeTransitButtonClicked(self):
+        pass
+
+    def onAdminVisitorManageTransitButtonClicked(self):
+        pass
+
+    def onAdminVisitorManageSiteButtonClicked(self):
+        pass
+
+    def onAdminVisitorExploreSiteButtonClicked(self):
+        pass
+
+    def onAdminVisitorExploreEventButtonClicked(self):
+        pass
+
+    def onAdminVisitorViewVisitHistoryButtonClicked(self):
+        pass
+
+    def onAdminVisitorViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onAdministratorFunctionalityBackButtonClicked(self):
+        pass
+
+class ManagerVisitorFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Manager-Visitor')
+        self.config(background='#ffffff')
+
+    def display(self):
+        managerVisitorFunctionalityLabel = Label(self, text="Manager Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        managerVisitorFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        managerVisitorManageProfileButton = Button(self,command=self.onManagerVisitorManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        managerVisitorManageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorManageEventButton = Button(self,command=self.onManagerVisitorManageEventButtonClicked,text="Manage Event", background='#4286f4')
+        managerVisitorManageEventButton.grid(row=2, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorViewStaffButton = Button(self,command=self.onManagerVisitorViewStaffButtonClicked,text="View Staff", background='#4286f4')
+        managerVisitorViewStaffButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorViewSiteReportButton = Button(self, command=self.onManagerVisitorViewSiteReportButtonClicked,text="View Site Report", background='#4286f4')
+        managerVisitorViewSiteReportButton.grid(row=3, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorExploreSiteButton = Button(self,command=self.onManagerVisitorViewStaffButtonClicked,text="Explore Site", background='#4286f4')
+        managerVisitorExploreSiteButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorExploreEventButton = Button(self, command=self.onManagerVisitorExploreEventButtonClicked,text="Explore Event", background='#4286f4')
+        managerVisitorExploreEventButton.grid(row=4, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorTakeTransitButton = Button(self,command=self.onManagerVisitorTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        managerVisitorTakeTransitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorViewTransitHistoryButton = Button(self,command=self.onManagerVisitorViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        managerVisitorViewTransitHistoryButton.grid(row=5, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorViewVisitHistoryButton = Button(self,command=self.onManagerVisitorViewTransitHistoryButtonClicked,text="View Visit History", background='#4286f4')
+        managerVisitorViewVisitHistoryButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerVisitorBackButton = Button(self, command=self.onManagerVisitorFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        managerVisitorBackButton.grid(row=6, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onManagerVisitorManageProfileButtonClicked(self):
+        pass
+
+    def onManagerVisitorManageEventButtonClicked(self):
+        pass
+
+    def onManagerVisitorViewStaffButtonClicked(self):
+        pass
+
+    def onManagerVisitorViewSiteReportButtonClicked(self):
+        pass
+
+    def onManagerVisitorExploreSiteButtonClicked(self):
+        pass
+
+    def onManagerVisitorExploreEventButtonClicked(self):
+        pass
+
+    def onManagerVisitorTakeTransitButtonClicked(self):
+        pass
+
+    def onManagerVisitorViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onManagerVisitorViewVisitHistoryButtonClicked(self):
+        pass
+
+    def onManagerVisitorFunctionalityBackButtonClicked(self):
+        pass
+
+class StaffVisitorFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Staff-Visitor')
+        self.config(background='#ffffff')
+
+    def display(self):
+        staffVisitorFunctionalityLabel = Label(self, text="Staff Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        staffVisitorFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        staffVisitorManageProfileButton = Button(self,command=self.onStaffVisitorManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        staffVisitorManageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorExploreEventButton = Button(self,command=self.onStaffVisitorExploreEventButtonClicked,text="Explore Event", background='#4286f4')
+        staffVisitorExploreEventButton.grid(row=2, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorViewScheduleButton = Button(self,command=self.onStaffVisitorViewScheduleButtonClicked,text="View Schedule", background='#4286f4')
+        staffVisitorViewScheduleButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorExploreSiteButton = Button(self,command=self.onStaffVisitorExploreSiteButtonClicked,text="Explore Site", background='#4286f4')
+        staffVisitorExploreSiteButton.grid(row=3, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorTakeTransitButton = Button(self,command=self.onStaffVisitorTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        staffVisitorTakeTransitButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorViewVisitHistoryButton = Button(self,command=self.onStaffVisitorViewVisitHistoryButtonClicked,text="View Visit History", background='#4286f4')
+        staffVisitorViewVisitHistoryButton.grid(row=4, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorViewTransitHistoryButton = Button(self,command=self.onStaffVisitorViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        staffVisitorViewTransitHistoryButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffVisitorBackButton = Button(self, command=self.onStaffVisitorFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        staffVisitorBackButton.grid(row=5, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onStaffVisitorManageProfileButtonClicked(self):
+        pass
+
+    def onStaffVisitorExploreEventButtonClicked(self):
+        pass
+
+    def onStaffVisitorViewScheduleButtonClicked(self):
+        pass
+
+    def onStaffVisitorExploreSiteButtonClicked(self):
+        pass
+
+    def onStaffVisitorTakeTransitButtonClicked(self):
+        pass
+
+    def onStaffVisitorViewVisitHistoryButtonClicked(self):
+        pass
+
+    def onStaffVisitorViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onStaffVisitorFunctionalityBackButtonClicked(self):
+        pass
+
+class ManagerFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Manager-Only')
+        self.config(background='#ffffff')
+
+    def display(self):
+        managerFunctionalityLabel = Label(self, text="Manager Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        managerFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        managerManageProfileButton = Button(self,command=self.onManagerManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        managerManageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerManageEventButton = Button(self,command=self.onManagerManageEventButtonClicked,text="Manage Event", background='#4286f4')
+        managerManageEventButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerViewStaffButton = Button(self,command=self.onManagerViewStaffButtonClicked,text="View Staff", background='#4286f4')
+        managerViewStaffButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerViewSiteReportButton = Button(self, command=self.onManagerViewSiteReportButtonClicked,text="View Site Report", background='#4286f4')
+        managerViewSiteReportButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerTakeTransitButton = Button(self,command=self.onManagerTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        managerTakeTransitButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerViewTransitHistoryButton = Button(self,command=self.onManagerViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        managerViewTransitHistoryButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        managerBackButton = Button(self, command=self.onManagerFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        managerBackButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onManagerManageProfileButtonClicked(self):
+        pass
+
+    def onManagerManageEventButtonClicked(self):
+        pass
+
+    def onManagerViewStaffButtonClicked(self):
+        pass
+
+    def onManagerViewSiteReportButtonClicked(self):
+        pass
+
+    def onManagerTakeTransitButtonClicked(self):
+        pass
+
+    def onManagerViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onManagerFunctionalityBackButtonClicked(self):
+        pass
+
+class StaffFunctionality(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Functionality -- Staff-Only')
+        self.config(background='#ffffff')
+
+    def display(self):
+        staffFunctionalityLabel = Label(self, text="Staff Functionality", font="Helvetica",foreground='#000000', background='#ffffff')
+        staffFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
+
+        staffManageProfileButton = Button(self,command=self.onStaffManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
+        staffManageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffViewScheduleButton = Button(self, command=self.onStaffViewScheduleButtonClicked,text="View Schedule", background='#4286f4')
+        staffViewScheduleButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffTakeTransitButton = Button(self,command=self.onStaffTakeTransitButtonClicked,text="Take Transit", background='#4286f4')
+        staffTakeTransitButton.grid(row=4, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffViewTransitHistoryButton = Button(self,command=self.onStaffViewTransitHistoryButtonClicked,text="View Transit History", background='#4286f4')
+        staffViewTransitHistoryButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        staffBackButton = Button(self, command=self.onStaffFunctionalityBackButtonClicked,text="Back",background='#4286f4')
+        staffBackButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def onStaffManageProfileButtonClicked(self):
+        pass
+
+    def onStaffViewScheduleButtonClicked(self):
+        pass
+
+    def onStaffTakeTransitButtonClicked(self):
+        pass
+
+    def onStaffViewTransitHistoryButtonClicked(self):
+        pass
+
+    def onStaffFunctionalityBackButtonClicked(self):
+        pass
 
 
 class TakeTransit(Toplevel):
@@ -1266,7 +1654,19 @@ class TakeTransit(Toplevel):
     def back(self):
         self.master.deiconify()
         self.destroy()
+"""
+class TransitHistory(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Transit History')
+        self.config(background='#ffffff')
+        self.SQL = Queries.UserTransitHistory(db)
 
+    def display(self):
+        transits,sites = self.SQL.load()
+
+        self.route,self.d1,self.d2 = StringVar(), StringVar(), StringVar()"""
 
 def encrypt(unhashed_string):
     return hashlib.sha256(unhashed_string.encode()).hexdigest()
