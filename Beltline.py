@@ -129,7 +129,6 @@ class Login(Toplevel):
         if isVisitor:
             if isEmployee:
                 if isAdmin:
-                    pass
                     administratorVisitorFunctionalityWindow = AdministratorVisitorFunctionality(self)
                     self.withdraw()
                     administratorVisitorFunctionalityWindow.display()
