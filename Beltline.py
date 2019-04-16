@@ -94,7 +94,7 @@ class Login(Toplevel):
                                           self.email)
 
         if usernameValid == 0:
-            messagebox.showwarning("Email Invalid", "This email is not registered in the system.")
+            messagebox.showwarning("Email Invalid", "This email isn't registered in the system.")
             return
         else:
             results = cursor.fetchone()
