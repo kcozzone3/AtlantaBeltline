@@ -11,7 +11,7 @@ from datetime import datetime
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = '9A4q372X4m'
+MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
 #######################################
 
 
@@ -1295,7 +1295,7 @@ class AdministratorFunctionality(Toplevel):
         administratorFunctionalityLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E)
 
         adminmanageProfileButton = Button(self,command=self.onAdminManageProfileButtonClicked, text="Manage Profile",background='#4286f4')
-        manageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        adminmanageProfileButton.grid(row=2, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         adminmanageUserButton = Button(self,command=self.onAdminManageUserButtonClicked,text="Manage User", background='#4286f4')
         adminmanageUserButton.grid(row=3, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
@@ -1334,7 +1334,8 @@ class AdministratorFunctionality(Toplevel):
         pass
 
     def onAdministratorFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 class AdministratorVisitorFunctionality(Toplevel):
     def __init__(self,master):
@@ -1405,7 +1406,8 @@ class AdministratorVisitorFunctionality(Toplevel):
         pass
 
     def onAdministratorFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 class ManagerVisitorFunctionality(Toplevel):
     def __init__(self,master):
@@ -1476,7 +1478,8 @@ class ManagerVisitorFunctionality(Toplevel):
         pass
 
     def onManagerVisitorFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 class StaffVisitorFunctionality(Toplevel):
     def __init__(self,master):
@@ -1535,7 +1538,8 @@ class StaffVisitorFunctionality(Toplevel):
         pass
 
     def onStaffVisitorFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 class ManagerFunctionality(Toplevel):
     def __init__(self,master):
@@ -1588,7 +1592,8 @@ class ManagerFunctionality(Toplevel):
         pass
 
     def onManagerFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 class StaffFunctionality(Toplevel):
     def __init__(self,master):
@@ -1629,7 +1634,8 @@ class StaffFunctionality(Toplevel):
         pass
 
     def onStaffFunctionalityBackButtonClicked(self):
-        pass
+        self.master.deiconify()
+        self.destroy()
 
 
 class TakeTransit(Toplevel):
