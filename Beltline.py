@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Dihydrogen_sulfate'
+MYSQL_PASSWORD = '9A4q372X4m'
 #######################################
 
 
@@ -355,6 +355,8 @@ class UserRegistration(Toplevel):
             messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
             return
 
+        hasValidEmail=False
+
         emailList = []
         while len(emailString) > 0:
             commaIndex = emailString.find(',')
@@ -398,12 +400,18 @@ class UserRegistration(Toplevel):
                 messagebox.showwarning("Email Already Taken",
                                        "An email you entered already exists within the database.")
                 return
+            hasValidEmail=True
+
+        if hasValidEmail == False:
+            messagebox.showwarning("Email not entered", "Please enter at least 1 email.")
+            return
 
         hashedPassword = encrypt(password)
         cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)",
                           (username, hashedPassword, firstName, lastName, "Pending"))
         for email in emailList:
             cursor.execute("INSERT into emails values (%s, %s)", (username, email))
+        db.commit()
         messagebox.showwarning("Registration Successful",
                                "You are now registered. You will need to wait for administrator approval to login.")
 
@@ -529,6 +537,8 @@ class VisitorRegistration(Toplevel):
             messagebox.showwarning("Last Name too long", "Last names can only be 32 characters. Please abbreviate.")
             return
 
+        hasValidEmail=False
+
         emailList = []
         while len(emailString) > 0:
             commaIndex = emailString.find(',')
@@ -572,6 +582,11 @@ class VisitorRegistration(Toplevel):
                 messagebox.showwarning("Email Already Taken",
                                        "An email you entered already exists within the database.")
                 return
+            hasValidEmail=True
+
+        if hasValidEmail == False:
+            messagebox.showwarning("Email not entered", "Please enter at least 1 email.")
+            return
 
         hashedPassword = encrypt(password)
         cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)",
@@ -579,6 +594,7 @@ class VisitorRegistration(Toplevel):
         cursor.execute("INSERT into visitor values (%s)", username)
         for email in emailList:
             cursor.execute("INSERT into emails values (%s, %s)", (username, email))
+        db.commit()
         messagebox.showwarning("Registration Successful",
                                "You are now registered. You will need to wait for administrator approval to login.")
 
@@ -805,6 +821,8 @@ class EmployeeRegistration(Toplevel):
         while cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
             empId = random.randint(1, 999999999)
 
+        hasValidEmail=False
+
         emailList = []
         while len(emailString) > 0:
             commaIndex = emailString.find(',')
@@ -848,6 +866,11 @@ class EmployeeRegistration(Toplevel):
                 messagebox.showwarning("Email Already Taken",
                                        "An email you entered already exists within the database.")
                 return
+            hasValidEmail=True
+
+        if hasValidEmail == False:
+            messagebox.showwarning("Email not entered", "Please enter at least 1 email.")
+            return
 
         hashedPassword = encrypt(password)
         cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)",
@@ -864,6 +887,7 @@ class EmployeeRegistration(Toplevel):
 
         for email in emailList:
             cursor.execute("INSERT into emails values (%s, %s)", (username, email))
+        db.commit()
 
         messagebox.showwarning("Registration Successful",
                                "You are now registered. You will need to wait for administrator approval to login.")
@@ -1089,6 +1113,8 @@ class EmployeeVisitorRegistration(Toplevel):
         while cursor.execute("SELECT * from employee where EmployeeID=%s", empId):
             empId = random.randint(1, 999999999)
 
+        hasValidEmail=False
+
         emailList = []
         while len(emailString) > 0:
             commaIndex = emailString.find(',')
@@ -1132,6 +1158,11 @@ class EmployeeVisitorRegistration(Toplevel):
                 messagebox.showwarning("Email Already Taken",
                                        "An email you entered already exists within the database.")
                 return
+            hasValidEmail=True
+
+        if hasValidEmail == False:
+            messagebox.showwarning("Email not entered", "Please enter at least 1 email.")
+            return
 
         hashedPassword = encrypt(password)
         cursor.execute("INSERT into user values (%s, %s, %s, %s, %s)",
@@ -1148,6 +1179,7 @@ class EmployeeVisitorRegistration(Toplevel):
 
         for email in emailList:
             cursor.execute("INSERT into emails values (%s, %s)", (username, email))
+        db.commit()
 
         messagebox.showwarning("Registration Successful",
                                "You are now registered. You will need to wait for administrator approval to login.")
