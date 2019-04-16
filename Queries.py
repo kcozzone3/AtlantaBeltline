@@ -1,13 +1,6 @@
 import pymysql
 from datetime import datetime
 
-# Sample connection object we'd create inside Beltline.py after the user logs in.
-# connection = pymysql.connect(host='localhost',
-#                              user=user,
-#                              password=password,
-#                              db='beltline',
-#                              charset='utf8mb4',
-#                              cursorclass=pymysql.cursors.DictCursor)
 
 """
  __      ___                   
@@ -35,6 +28,19 @@ SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
                       ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
                       JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
+
+CREATE VIEW emp_profile AS
+SELECT E.EmpUsername, E.EmployeeID, E.Phone, Concat(E.Address, ', ', E.City, ' ', E.State, ', ', E.Zipcode) as Address
+	FROM Employee as E;
+
+CREATE VIEW user_type AS
+SELECT Username, CASE WHEN EXISTS(SELECT * FROM manager WHERE ManUsername = u.Username) = 1 THEN 'Manager' collate utf8mb4_general_ci
+				 WHEN EXISTS(SELECT * FROM staff WHERE StaffUsername = u.Username) = 1 THEN 'Staff' collate utf8mb4_general_ci
+				 WHEN EXISTS(SELECT * FROM visitor WHERE VisUsername = u.Username) = 1 THEN 'Visitor' collate utf8mb4_general_ci
+                             ELSE 'User' collate utf8mb4_general_ci
+       END AS UserType
+FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername = u.Username);
+
 """
 
 """
@@ -48,9 +54,9 @@ SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
                                                                                |___/ 
 """ """SCREENS 15-16"""
 
-"""(15) USER TAKE TRANSIT"""
 
 class TakeTransit:
+    """(15) USER TAKE TRANSIT"""
     def __init__(self, connection):
         self.connection = connection
 
@@ -68,32 +74,17 @@ class TakeTransit:
 
             transits = {1: transits[1]}  # Returns just col names, as we have to load a blank table to start with.
 
-            cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-            sites = [i for d in cursor.fetchall() for i in list(d.values())]
+            cursor.execute("SELECT Name FROM site")
+            sites = [d['Name'] for d in cursor.fetchall()]
 
         return transits, sites
 
     def filter(self, p1=None, p2=None, site=None, transport_type=None, sort='TransportType'):
         """Given two prices, a transport type and site, return a list of tuples that represent the possible transits."""
-        # We can imagine that we'd get the parameters like thus (inside Beltline.py):
-        # p1, p2, transport_type, site = priceBox1.get(), priceBox2.get(), transportTypeDropdown.get(), containSiteDropdown.get()
 
-        query = "SELECT Route, TransportType, Price, NumSites as '# Connected Sites' FROM transit_connect "
-        print(sort)
-        if not any([p1, p2, transport_type, site]):  # If no filter params are given
-            with self.connection.cursor() as cursor:
-                cursor.execute(query + 'GROUP BY TransportType, Route')
-                transits = cursor.fetchall()
-
-                for i in transits:
-                    for key in i:
-                        i[key] = str(i[key])
-                transits = {i+1: transits[i] for i in range(len(transits))}
-
-                return transits
-        else:
-            query += "WHERE 1=1 "  # 1=1 is there so I can add AND to every if statement and
-                                   # not have to check if there should be an AND statement there
+        query = "SELECT Route, TransportType, Price, NumSites as '# Connected Sites' FROM transit_connect WHERE 1=1 "
+        # 1=1 is there so I can add AND to every if statement and not have to check if there should be an
+        # AND statement there
         if p1 and p2:
             query += f"AND Price BETWEEN {p1} AND {p2} "
         elif p1:
@@ -107,11 +98,94 @@ class TakeTransit:
         if site:
             query += f"AND SiteName = '{site}' "
 
-        query += f'GROUP BY TransportType, Route ORDER BY {sort} ASC'
-
+        query += f'GROUP BY TransportType, Route ORDER BY {sort} DESC'
 
         with self.connection.cursor() as cursor:
-            print(query)
+            cursor.execute(query)
+            transits = cursor.fetchall()
+
+        for i in transits:
+            for key in i:
+                i[key] = str(i[key])
+        transits = {i+1: transits[i] for i in range(len(transits))}
+
+        if transits == {}:
+            transits = self.load()[0]
+            # Why does .fetchall() return an empty tuple if there are no results? Why not an empty dict like any reasonable person would want
+
+        return transits
+
+
+    def submit(self, route, transport_type, date, username):
+        """Given a route, transport_type, and date, submits an entry into the database. Returns 0 for a successful
+        submission, -1 if the User attempts to take the same transport on the same day twice, and -2 if the inputted
+        date is incorrect. """
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM take WHERE Username = '{username}' AND Date = '{date}' AND Route = '{route}' "
+                           f"AND TransportType = '{transport_type}'")
+            if len(cursor.fetchall()) >= 1:
+                # Create a window/popup alerting the user they cannot take the same transit twice
+                return -1
+
+            else:
+                cursor.execute(f"INSERT INTO take VALUES ('{username}', '{transport_type}', '{route}', '{date}')")
+                self.connection.commit()
+
+        return 0
+
+
+class TransitHistory:
+    """(16) USER TRANSIT HISTORY"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        """Given a username, returns a list of tuples that represents all of the transits a User has taken, and a list
+        of sites for the Contain Site filter dropdown."""
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Date, Route, TransportType, Price FROM transit_connect NATURAL JOIN take")
+            transits = cursor.fetchall()
+
+
+            for i in transits:
+                for key in i:
+                    i[key] = ""
+
+            transits = {1: transits[0]}  # Returns just col names, as we have to load a blank table to start with.
+
+            cursor.execute("SELECT Name FROM site")
+            sites = [d['Name'] for d in cursor.fetchall()]
+
+        return transits, sites
+
+
+    def filter(self, username, d1=None, d2=None, transport_type=None, site=None, route=None, sort='Date'):
+        """Given two days (as strings or datetime objects), a transport type, site, and route, return a list of tuples
+        that represents all of the transits a User has taken."""
+
+        query = f"SELECT Date, Route, TransportType, Price FROM transit_connect NATURAL JOIN take WHERE " \
+                f"Username = '{username}' "
+        if d1 and d2:
+            query += f"AND Date BETWEEN '{d1}' AND '{d2}' "
+        elif d1:
+            query += f"AND Date >= '{d1}' "
+        elif d2:
+            query += f"AND Date <= '{d2}' "
+
+        if transport_type:
+            query += f"AND TransportType = '{transport_type}' "
+
+        if site:
+            query += f"AND SiteName = '{site}' "
+
+        if route:
+            query += f"AND Route = '{route}' "
+
+        query += f'GROUP BY TransportType, Route, Date ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
             cursor.execute(query)
             transits = cursor.fetchall()
 
@@ -122,86 +196,7 @@ class TakeTransit:
 
         if transits == {}:
             transits = self.load()[0]  # Why does .fetchall() return an empty tuple if there are no results?
-        print(transits)
-        return transits
-
-
-    def submit(self, route, transport_type, date, username):
-        """Given a route, transport_type, and date, submits an entry into the database. Returns 0 for a successful
-        submission, -1 if the User attempts to take the same transport on the same day twice, and -2 if the inputted
-        date is incorrect. """
-
-        try:
-            datetime.strptime(date, '%Y-%m-%d')
-        except:
-            # If this throws an error (incorrect date format), then we'd make an error window/popup to alert the User.
-            return -2
-
-        with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM take WHERE Username = {username} AND Date = {date}")
-            if len(cursor.fetchall()) >= 1:
-                # Create a window/popup alerting the user they cannot take the same transit twice
-                return -1
-
-            else:
-                cursor.execute(f"INSERT INTO take VALUES ({username}, {transport_type}, {route}, {date})")
-                self.connection.commit()
-
-        return 0
-
-
-
-"""(16) USER TRANSIT HISTORY"""
-class UserTransitHistory:
-    def __init__(self, connection):
-        self.connection = connection
-
-    def load(self, username):
-        """Given a username, returns a list of tuples that represents all of the transits a User has taken, and a list
-        of sites for the Contain Site filter dropdown."""
-
-        with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM take WHERE Username = {username}")
-            transits = cursor.fetchall()
-
-            cursor.execute("SELECT DISTINCT SiteName FROM transit_connect")
-            sites = [i for d in cursor.fetchall() for i in list(d.values())]
-
-        return transits, sites
-
-
-    def filter(self, username, d1=None, d2=None, transport_type=None, site=None, route=None):
-        """Given two days (as strings or datetime objects), a transport type, site, and route, return a list of tuples
-        that represents all of the transits a User has taken."""
-        #We can imagine that we'd get the parameters like the following:
-        #d1, d2, transport_type, site, route = dateBox1.get(), dateBox2.get(), transportTypeDropdown.get(), \
-        #                                      containSiteDropdown.get(), routeBox.get()
-
-        if type(d1) == str:  # Converts datetime object to string, just in case we ever pass in a datetime object.
-            d1 = d1.strftime('%Y-%m-%d')
-            d2 = d2.strftime('%Y-%m-%d')
-
-        query = f"SELECT * FROM take WHERE Username = {username} "
-        if d1 and d2:
-            query += f"AND Date BETWEEN {d1} AND {d2} "
-        elif d1:
-            query += f"AND Date >= {d1} "
-        elif d2:
-            query += f"AND Date <= {d2} "
-
-        if transport_type:
-            query += f"AND TransportType = {transport_type} "
-
-        if site:
-            query += f"AND SiteName = {site} "
-
-        if route:
-            query += f"AND Route = {route}"
-
-        with self.connection.cursor() as cursor:
-            cursor.execute(query)
-            transits = cursor.fetchall()
-
+        print(query)
         return transits
 
 
@@ -217,5 +212,411 @@ class UserTransitHistory:
                   | |             __/ |                                                                   __/ |
                   |_|            |___/                                                                   |___/ 
 """
-"""(17) EMPLOYEE MANAGE PROFILE"""
+
+
+class ManageProfile:
+    """(17) EMPLOYEE MANAGE PROFILE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, username):
+        """Returns a first name, last name, site name, emp ID, phone number, address (as a concatenated string), and
+        a list of emails."""
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT EmpUsername as 'Username', EmployeeID, Phone, Address, FirstName, LastName FROM "
+                           f"emp_profile JOIN user ON EmpUsername = Username WHERE EmpUsername = '{username}'")
+            username, empid, phone, address, fname, lname= cursor.fetchall()[0].values()
+
+            cursor.execute(f"SELECT Email FROM emails WHERE Username = '{username}'")
+            emails = [d['Email'] for d in cursor.fetchall()]
+
+            cursor.execute(f"SELECT Name FROM Site WHERE ManUsername = '{username}'")
+            site = cursor.fetchone()
+            if site:
+                site = site['Name']
+
+            cursor.execute(f"SELECT Exists(SELECT VisUsername FROM visitor WHERE VisUsername = '{username}') as Vis")
+            vis = cursor.fetchone()['Vis']
+            if vis == 1:
+                vis = True
+
+            else:
+                vis = False
+
+            return fname, lname, empid, phone, address, emails, site, vis
+
+    def submit(self, username, fname, lname, phone, emails, vis):
+
+        with self.connection.cursor() as cursor:
+
+            cursor.execute(f"SELECT Email FROM emails WHERE Username != '{username}'")
+            all_emails = [d['Email'] for d in cursor.fetchall()]
+            if any(i in all_emails for i in emails):
+                return -1
+
+            cursor.execute(f"DELETE FROM emails WHERE Username = '{username}'")
+            self.connection.commit()
+
+            for email in emails:
+                cursor.execute(f"INSERT INTO emails VALUES ('{username}', '{email}')")
+                self.connection.commit()
+
+            cursor.execute(f"UPDATE user SET FirstName = '{fname}', LastName = '{lname}' WHERE Username = '{username}'")
+            self.connection.commit()
+
+            cursor.execute(f"UPDATE employee SET phone = '{phone}' WHERE EmpUsername = '{username}'")
+            self.connection.commit()
+
+            if vis and vis != self.get_vis(username):
+                cursor.execute(f"INSERT INTO visitor VALUES ('{username}')")
+                self.connection.commit()
+
+            elif not vis and vis != self.get_vis(username):
+                cursor.execute(f"DELETE FROM visitor WHERE VisUsername = '{username}'")
+                self.connection.commit()
+
+        return 0
+
+    def get_vis(self, username):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Exists(SELECT VisUsername FROM visitor WHERE VisUsername = '{username}') as Vis")
+            vis = cursor.fetchone()['Vis']
+            if vis == 1:
+                vis = True
+
+            else:
+                vis = False
+
+            return vis
+
+
+class ManageUser:
+    """(18) ADMIN MANAGE USER"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT Username, COUNT(Email) AS 'Email Count', UserType, Status FROM user NATURAL JOIN emails "
+                           "NATURAL JOIN user_type GROUP BY Username")
+            users = cursor.fetchall()
+
+            for i in users:
+                for key in i:
+                    i[key] = ""
+
+            users = {1: users[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+        return users
+
+    def filter(self, username=None, user_type=None, status=None, sort='Username'):
+
+        query = "SELECT Username, COUNT(Email) AS 'Email Count', UserType, Status FROM user NATURAL JOIN emails " \
+                "NATURAL JOIN user_type WHERE 1=1 "
+        if username:
+           query += f"AND Username = '{username}' "
+
+        if user_type:
+            query += f"AND UserType = '{user_type}' "
+
+        if status:
+            query += f"AND Status = '{status}' "
+
+        query += f'GROUP BY Username ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            users = cursor.fetchall()
+
+        for i in users:
+            for key in i:
+                i[key] = str(i[key])
+        users = {i+1: users[i] for i in range(len(users))}
+
+        if users == {}:
+            users = self.load()
+        print(users)
+        return users
+
+
+    def submit(self, username):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"UPDATE user SET Status = 'Approved' WHERE Username = '{username}'")
+            self.connection.commit()
+
+
+class ManageSite:
+    """(20) ADMIN EDIT SITE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT Name as SiteName, Manager, OpenEveryday FROM site AS s JOIN "
+                           "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager "
+                           "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername")
+            sites = cursor.fetchall()
+
+            for i in sites:
+                for key in i:
+                    i[key] = ""
+
+            sites = {1: sites[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+            cursor.execute("SELECT DISTINCT ManUsername, FirstName, LastName FROM user JOIN manager ON Username = ManUsername")
+            managers = [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT Name FROM site")
+            sitenames = [d['Name'] for d in cursor.fetchall()]
+
+        return sites, sitenames, managers
+
+    def filter(self, site=None, manager=None, everyday=None, sort='SiteName'):
+
+        query = "SELECT Name as SiteName, Manager, OpenEveryday FROM site AS s JOIN " \
+                "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager " \
+                "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername " \
+                "WHERE 1=1 "
+        if site:
+           query += f"AND Name = '{site}' "
+
+        if manager:
+            query += f"AND Manager = '{manager}' "
+
+        if everyday is not None:
+            query += f"AND OpenEveryday = {everyday} "
+
+        query += f'ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            sites = cursor.fetchall()
+
+        for i in sites:
+            for key in i:
+                i[key] = str(i[key])
+        sites = {i+1: sites[i] for i in range(len(sites))}
+        print(sites)
+        for d in sites.values():
+            d['OpenEveryday'] = 'false' if d['OpenEveryday'] == '0' else 'true'
+
+        if sites == {}:
+            return self.load()[0]
+        else:
+            return sites
+
+    def delete(self, sitename):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM site WHERE Name = '{sitename}'")
+            self.connection.commit()
+
+
+
+class EditSite:
+    """(19) ADMIN MANAGE SITE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, sitename):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT Manager, Zipcode, OpenEveryday, Address FROM site AS s JOIN "
+                           "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager "
+                           "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername "
+                           f"WHERE Name = '{sitename}'")
+            site = cursor.fetchone()
+            manager, zipcode, everyday, address = site['Manager'], site['Zipcode'], site['OpenEveryday'], site['Address']
+            everyday = True if everyday == 1 else False
+
+            cursor.execute("SELECT ManUsername, FirstName, LastName FROM user JOIN manager ON Username = ManUsername "
+                           "WHERE ManUsername NOT IN (SELECT ManUsername FROM site)")
+            managers = [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT Name FROM site")
+            sitenames = [d['Name'] for d in cursor.fetchall()]
+
+        return manager, managers, zipcode, address, everyday
+
+    def update(self, sitename, address, zipcode, manager, everyday, original):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT ManUsername FROM user JOIN manager ON Username = ManUsername "
+                                     f"WHERE Concat(FirstName, ' ', LastName) = '{manager}'")
+            manager = cursor.fetchone()['ManUsername']
+            if sitename == original:
+                cursor.execute(f"UPDATE Site SET Address = '{address}', Zipcode = {zipcode}, ManUsername = '{manager}', "
+                               f"OpenEveryday = {'true' if everyday else 'false'} WHERE Name = '{sitename}'")
+                self.connection.commit()
+
+            else:
+                cursor.execute("SELECT Name FROM site")
+                sites = [d['Name'] for d in cursor.fetchall()]
+
+                if sitename in sites:
+                    return -1
+
+                else:
+                    cursor.execute(f"UPDATE Site SET Address = '{address}', Zipcode = {zipcode}, "
+                                   f"ManUsername = '{manager}', OpenEveryday = {'true' if everyday else 'false'}, "
+                                   f"Name = '{sitename}' WHERE Name = '{original}'")
+                    self.connection.commit()
+
+
+class CreateSite:
+    """(21) ADMIN CREATE SITE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT FirstName, LastName FROM user JOIN manager ON Username = ManUsername "
+                           "WHERE ManUsername NOT IN (SELECT ManUsername FROM site)")
+            return [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+
+    def create(self, sitename, address, zipcode, manager, everyday):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT ManUsername FROM user JOIN manager ON Username = ManUsername "
+                           f"WHERE Concat(FirstName, ' ', LastName) = '{manager}'")
+            manager = cursor.fetchone()['ManUsername']
+
+            cursor.execute("SELECT Name FROM site")
+            sites = [d['Name'] for d in cursor.fetchall()]
+
+            if sitename in sites:
+                return -1
+
+            else:
+                cursor.execute(f"INSERT INTO Site VALUES ('{sitename}', '{address}', {zipcode}, "
+                               f"{'true' if everyday else 'false'}, '{manager}')")
+                self.connection.commit()
+
+
+class ManageTransit:
+    """(20) ADMIN MANAGE TRANSIT"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT Route, TransportType, Price, NumSites AS '# Connected Sites', "
+                           "NumTaken as '# Transits Logged'  FROM transit_connect NATURAL JOIN "
+                           "(SELECT TransportType, Route, COUNT(*) as NumTaken FROM take GROUP BY TransportType, Route) "
+                           "as tmp GROUP BY Route, TransportType")
+            transits = cursor.fetchall()
+
+            for i in transits:
+                for key in i:
+                    i[key] = ""
+
+                    transits = {1: transits[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+            cursor.execute("SELECT Name FROM site")
+            sitenames = [d['Name'] for d in cursor.fetchall()]
+
+        return transits, sitenames
+
+    def filter(self, sitename=None, ttype=None, route=None, p1=None, p2=None, sort='TransportType'):
+
+        query = "SELECT Route, TransportType, Price, NumSites AS '# Connected Sites', " \
+                "NumTaken as '# Transits Logged'  FROM transit_connect NATURAL JOIN " \
+                "(SELECT TransportType, Route, COUNT(*) as NumTaken FROM take GROUP BY TransportType, Route) " \
+                "as tmp WHERE 1=1 "
+        if sitename:
+           query += f"AND SiteName = '{sitename}' "
+
+        if ttype:
+            query += f"AND TransportType = '{ttype}' "
+
+        if route is not None:
+            query += f"AND Route = '{route}' "
+
+        if p1 and p2:
+            query += f"AND Price BETWEEN {p1} AND {p2} "
+        elif p1:
+            query += f"AND Price >= {p1} "
+        elif p2:
+            query += f"AND Price <= {p2} "
+
+        query += f'GROUP BY TransportType, Route ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            transits = cursor.fetchall()
+
+        for i in transits:
+            for key in i:
+                i[key] = str(i[key])
+        transits = {i+1: transits[i] for i in range(len(transits))}
+
+        if transits == {}:
+            return self.load()[0]
+        else:
+            return transits
+
+
+class EditTransit:
+    """(23) ADMIN EDIT SITE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, ttype, route):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Price, SiteName FROM transit_connect WHERE TransportType = '{ttype}' AND Route = '{route}'")
+            sites = cursor.fetchall()
+
+            price = sites[0]['Price']
+            connected_sites = [d['SiteName'] for d in sites]
+
+            cursor.execute(f"SELECT SiteName FROM transit_connect WHERE SiteName NOT IN (SELECT SiteName "
+                           f"FROM transit_connect WHERE TransportType = '{ttype}' AND Route = '{route}')")
+            other_sites = [d['SiteName'] for d in cursor.fetchall()]
+
+
+
+        return price, connected_sites, other_sites
+
+    def submit(self, ttype, route, price, sites, original):
+        with self.connection.cursor() as cursor:
+            try:
+                cursor.execute(f"DELETE FROM connect WHERE Route='{original}' AND TransportType='{ttype}'")
+                for site in sites:
+                    cursor.execute(f"INSERT INTO connect VALUES ('{site}', '{ttype}', '{original}')")
+
+                cursor.execute(f"UPDATE transit SET Route='{route}', Price='{price}' WHERE TransportType='{ttype}' AND Route='{original}'")
+                self.connection.commit()
+
+            except Exception as e:
+                print(e)
+                return -1
+
+class CreateTransit:
+    """(24) ADMIN CREATE TRANSIT"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT FirstName, LastName FROM user JOIN manager ON Username = ManUsername "
+                           "WHERE ManUsername NOT IN (SELECT ManUsername FROM site)")
+            return [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+
+    def create(self, sitename, address, zipcode, manager, everyday):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT ManUsername FROM user JOIN manager ON Username = ManUsername "
+                           f"WHERE Concat(FirstName, ' ', LastName) = '{manager}'")
+            manager = cursor.fetchone()['ManUsername']
+
+            cursor.execute("SELECT Name FROM site")
+            sites = [d['Name'] for d in cursor.fetchall()]
+
+            if sitename in sites:
+                return -1
+
+            else:
+                cursor.execute(f"INSERT INTO Site VALUES ('{sitename}', '{address}', {zipcode}, "
+                               f"{'true' if everyday else 'false'}, '{manager}')")
+                self.connection.commit()
+
+
 
