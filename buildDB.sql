@@ -37,14 +37,15 @@ CREATE TABLE Visitor
      	 
 CREATE TABLE Employee
    	 ( EmpUsername varchar(16) NOT NULL,
-      	EmployeeID int NOT NULL,
+      	EmployeeID char(9) NOT NULL,
       	Phone char(10) NOT NULL,
       	Address varchar(64),
       	City varchar(32),
       	State varchar(32),
       	Zipcode char(5),
-	UNIQUE EmployeeID (EmployeeID), 
-UNIQUE Phone (Phone),
+        
+	    UNIQUE EmployeeID (EmployeeID), 
+	    UNIQUE Phone (Phone),
       	PRIMARY KEY (EmpUsername),
       	FOREIGN KEY (EmpUsername) REFERENCES User(Username)
 
@@ -200,7 +201,23 @@ CREATE TABLE Connect
 	ON UPDATE CASCADE
 
       	);
-    
-     
 
+CREATE VIEW transit_connect AS
+SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
+    FROM transit AS T JOIN connect AS C 
+                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
+                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
+                      ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
+                      
+CREATE VIEW emp_profile AS
+SELECT E.EmpUsername, E.EmployeeID, E.Phone, Concat(E.Address, ', ', E.City, ' ', E.State, ', ', E.Zipcode) as Address
+	FROM Employee as E;
+
+CREATE VIEW user_type AS  -- https://stackoverflow.com/questions/63447/how-do-i-perform-an-if-then-in-an-sql-select <--- NEAT!!! Also, weird collate errors for some reason :/
+SELECT Username, CASE WHEN EXISTS(SELECT * FROM manager WHERE ManUsername = u.Username) = 1 THEN 'Manager' collate utf8mb4_general_ci
+				 WHEN EXISTS(SELECT * FROM staff WHERE StaffUsername = u.Username) = 1 THEN 'Staff' collate utf8mb4_general_ci
+				 WHEN EXISTS(SELECT * FROM visitor WHERE VisUsername = u.Username) = 1 THEN 'Visitor' collate utf8mb4_general_ci
+                             ELSE 'User' collate utf8mb4_general_ci
+       END AS UserType
+FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername = u.Username);
 
