@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
+MYSQL_PASSWORD = '9A4q372X4m'
 #######################################
 
 
@@ -1708,7 +1708,9 @@ class StaffFunctionality(Toplevel):
         profileWindow.display()
 
     def onStaffViewScheduleButtonClicked(self):
-        pass
+        scheduleWindow = staffViewSchedule(self)
+        self.withdraw()
+        scheduleWindow.display()
 
     def onStaffTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
@@ -2876,39 +2878,72 @@ class staffEventDetail(Toplevel):
         self.destroy()
 
 class staffViewSchedule(Toplevel):
-    def __init__(self,master):
-        Toplevel.__init__(self)
-        self.master = master
-        self.title('View Schedule')
-        self.config(background='#ffffff')
+    def __init__(self, master):
+            Toplevel.__init__(self)
+            self.master = master
+            self.title('View Schedule')
+            self.config(background='#ffffff')
+            self.SQL = Queries.StaffViewSchedule(db)
 
     def display(self):
         self.eventName = StringVar()
         self.descriptionKeyword = StringVar()
         self.startDate = StringVar()
         self.endDate = StringVar()
+
+        schedule = self.SQL.load()
+        self.resultTable = TableCanvas(self, editable=True, data=schedule,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(schedule), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(schedule.values())[0]), height=25*7)
+        #self.resultTable.grid(row=0, column=0, rowspan=10, sticky=W + E)
+        self.resultTable.show()
+
         eventNameLabel = Label(self, text="Event Name", foreground='#000000', background='#ffffff')
-        eventNameLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        eventNameLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
         descriptionKeywordLabel = Label(self, text="Description Keyword", foreground='#000000', background='#ffffff')
-        descriptionKeywordLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        descriptionKeywordLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
         startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
-        startDateLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        startDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
         endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
-        endDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        filterButton = Button(self, text="Filter", background='#4286f4')
-        filterButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        endDateLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        filterButton = Button(self, text="Filter", command=self.filter, background='#4286f4')
+        filterButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
         viewEventButton = Button(self, text="View Event", background='#4286f4')
-        viewEventButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        viewEventButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        backButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
         eventNameBox = Entry(self, textvariable=self.eventName, width=20)
-        eventNameBox.grid(row=1, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        eventNameBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
         descriptionKeywordBox = Entry(self, textvariable=self.descriptionKeyword, width=20)
-        descriptionKeywordBox.grid(row=2, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        descriptionKeywordBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
         startDateBox = Entry(self, textvariable=self.startDate, width=20)
-        startDateBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        startDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
         endDateBox = Entry(self, textvariable=self.endDate, width=20)
-        endDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        endDateBox.grid(row=5, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['EventName'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        eName, keyword, sDate, eDate = self.eventName.get(), self.descriptionKeyword.get(), self.startDate.get(), self.endDate.get()
+
+        conv = {'': None, 'Any': None}
+        eName, keyword, sDate, eDate = conv.get(eName, eName), conv.get(keyword, keyword), conv.get(sDate, sDate), conv.get(eDate, eDate)
+
+        if sort is None:
+            sort = 'E.EventName'
+        schedule = self.SQL.filter(identifier, eName, sDate, eDate, keyword, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(schedule)
+        self.resultTable.redraw()
 
     def back(self):
         self.master.deiconify()

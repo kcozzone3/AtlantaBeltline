@@ -3,9 +3,9 @@ from datetime import datetime
 
 
 """
- __      ___                   
- \ \    / (_)                  
-  \ \  / / _  _____      _____ 
+ __      ___
+ \ \    / (_)
+  \ \  / / _  _____      _____
    \ \/ / | |/ _ \ \ /\ / / __|
     \  /  | |  __/\ V  V /\__ \
      \/   |_|\___| \_/\_/ |___/
@@ -16,17 +16,17 @@ Some views that will make later queries easier. Put these at the bottom of build
 """
 This looks like a mess, admittedly. And there's probably a better way to do it.
 This view (transit_connect) basically holds all of the transits that a user may take.
-It joins the transit table and connect table, and then joins to a temporary table that 
-calculates the number of connected sites (which is necessary according to the PDF). 
+It joins the transit table and connect table, and then joins to a temporary table that
+calculates the number of connected sites (which is necessary according to the PDF).
 
-Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to 
+Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to
 display each column.
 
 CREATE VIEW transit_connect AS
 SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
-    FROM transit AS T JOIN connect AS C 
-                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
-                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
+    FROM transit AS T JOIN connect AS C
+                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route)
+                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
 
 CREATE VIEW emp_profile AS
@@ -44,14 +44,14 @@ FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername 
 """
 
 """
-  _    _                 ______                _   _                   _ _ _         
- | |  | |               |  ____|              | | (_)                 | (_) |        
- | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  _    _                 ______                _   _                   _ _ _
+ | |  | |               |  ____|              | | (_)                 | (_) |
+ | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  | |  | / __|/ _ \ '__| |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |__| \__ \  __/ |    | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
   \____/|___/\___|_|    |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                                                                                 __/ |
-                                                                               |___/ 
+                                                                               |___/
 """ """SCREENS 15-16"""
 
 
@@ -203,14 +203,14 @@ class TransitHistory:
 
 
 """
-  ______                 _                         ______                _   _                   _ _ _         
- |  ____|               | |                       |  ____|              | | (_)                 | (_) |        
- | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  ______                 _                         ______                _   _                   _ _ _
+ |  ____|               | |                       |  ____|              | | (_)                 | (_) |
+ | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  |  __| | '_ ` _ \| '_ \| |/ _ \| | | |/ _ \/ _ \ |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |____| | | | | | |_) | | (_) | |_| |  __/  __/ | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
  |______|_| |_| |_| .__/|_|\___/ \__, |\___|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                   | |             __/ |                                                                   __/ |
-                  |_|            |___/                                                                   |___/ 
+                  |_|            |___/                                                                   |___/
 """
 
 
@@ -619,4 +619,59 @@ class CreateTransit:
                 self.connection.commit()
 
 
+class StaffViewSchedule:
+    def __init__(self, connection):
+        self.connection = connection
 
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT E.EventName, E.SiteName, A.StartDate, E.EndDate, COUNT(*) as 'Staff Count' "
+                "from event as E join assignto as A on (E.EventName = A.EventName "
+                "and E.SiteName = A.SiteName and A.StartDate between E.StartDate and "
+                "E.EndDate) group by E.EventName, E.SiteName, E.EndDate")
+            schedule = cursor.fetchall()
+            for i in schedule:
+                for key in i:
+                    i[key] = ""
+
+            schedule = {1: schedule[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+        return schedule
+
+    def filter(self, user, eventname=None, startdate=None, enddate = None, keyword=None, sort='E.EventName'):
+        print(user)
+        query = "SELECT E.EventName, E.SiteName, A.StartDate, E.EndDate, COUNT(*) as 'Staff Count' " \
+                "from event as E join assignto as A on (E.EventName = A.EventName " \
+                "and E.SiteName = A.SiteName and A.StartDate between E.StartDate and " \
+                "E.EndDate) where A.StaffUsername = '{user}' "
+        print(query)
+        if eventname:
+           query += f"AND E.EventName = '{eventname}' "
+
+        if startdate and enddate:
+            query += f"AND A.StartDate >= '{startdate}' AND E.EndDate <= '{enddate}' "
+        elif startdate:
+            query += f"AND A.StartDate >= '{startdate}' "
+        elif enddate:
+            query += f"AND E.EndDate <= '{enddate}' "
+
+        # if keyword:
+        #     query += f"AND E.Description like '%' "
+
+        query += f'GROUP BY E.EventName, E.SiteName, E.EndDate ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            schedule = cursor.fetchall()
+            print(schedule)
+
+        for i in schedule:
+            for key in i:
+                i[key] = str(i[key])
+        schedule = {i+1: schedule[i] for i in range(len(schedule))}
+
+        if schedule == {}:
+            return self.load()[0]
+        else:
+            return schedule
