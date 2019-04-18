@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -1299,8 +1299,9 @@ class VisitorFunctionality(Toplevel):
         #TODO
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
-        pass
-        #TODO
+        exploreSiteWindow = visitorExploreSite(self)
+        self.withdraw()
+        exploreSiteWindow.display()
 
     def onVisitorFunctionalityVisitHistoryButtonButtonClicked(self):
         visitHistoryWindow = visitorVisitHistory(self)
