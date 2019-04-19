@@ -3,9 +3,9 @@ from datetime import datetime
 
 
 """
- __      ___                   
- \ \    / (_)                  
-  \ \  / / _  _____      _____ 
+ __      ___
+ \ \    / (_)
+  \ \  / / _  _____      _____
    \ \/ / | |/ _ \ \ /\ / / __|
     \  /  | |  __/\ V  V /\__ \
      \/   |_|\___| \_/\_/ |___/
@@ -16,17 +16,17 @@ Some views that will make later queries easier. Put these at the bottom of build
 """
 This looks like a mess, admittedly. And there's probably a better way to do it.
 This view (transit_connect) basically holds all of the transits that a user may take.
-It joins the transit table and connect table, and then joins to a temporary table that 
-calculates the number of connected sites (which is necessary according to the PDF). 
+It joins the transit table and connect table, and then joins to a temporary table that
+calculates the number of connected sites (which is necessary according to the PDF).
 
-Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to 
+Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to
 display each column.
 
 CREATE VIEW transit_connect AS
 SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
-    FROM transit AS T JOIN connect AS C 
-                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
-                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
+    FROM transit AS T JOIN connect AS C
+                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route)
+                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
 
 CREATE VIEW emp_profile AS
@@ -44,14 +44,14 @@ FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername 
 """
 
 """
-  _    _                 ______                _   _                   _ _ _         
- | |  | |               |  ____|              | | (_)                 | (_) |        
- | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  _    _                 ______                _   _                   _ _ _
+ | |  | |               |  ____|              | | (_)                 | (_) |
+ | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  | |  | / __|/ _ \ '__| |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |__| \__ \  __/ |    | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
   \____/|___/\___|_|    |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                                                                                 __/ |
-                                                                               |___/ 
+                                                                               |___/
 """ """SCREENS 15-16"""
 
 
@@ -203,14 +203,14 @@ class TransitHistory:
 
 
 """
-  ______                 _                         ______                _   _                   _ _ _         
- |  ____|               | |                       |  ____|              | | (_)                 | (_) |        
- | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  ______                 _                         ______                _   _                   _ _ _
+ |  ____|               | |                       |  ____|              | | (_)                 | (_) |
+ | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  |  __| | '_ ` _ \| '_ \| |/ _ \| | | |/ _ \/ _ \ |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |____| | | | | | |_) | | (_) | |_| |  __/  __/ | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
  |______|_| |_| |_| .__/|_|\___/ \__, |\___|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                   | |             __/ |                                                                   __/ |
-                  |_|            |___/                                                                   |___/ 
+                  |_|            |___/                                                                   |___/
 """
 
 
@@ -618,5 +618,68 @@ class CreateTransit:
                                f"{'true' if everyday else 'false'}, '{manager}')")
                 self.connection.commit()
 
+class visitorExploreEvent:
+    """(34) Visitor Explore Event"""
+    def __init__(self, connection):
+        self.connection = connection
 
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT Name as SiteName, Manager, OpenEveryday FROM site AS s JOIN "
+                           "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager "
+                           "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername")
+            events = cursor.fetchall()
 
+            for i in events:
+                for key in i:
+                    i[key] = ""
+
+            events = {1: events[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+            # cursor.execute("SELECT DISTINCT ManUsername, FirstName, LastName FROM user JOIN manager ON Username = ManUsername")
+            # managers = [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+
+            # cursor.execute("SELECT Name FROM site")
+            # sitenames = [d['Name'] for d in cursor.fetchall()]
+
+        return events#, sitenames, managers
+
+    def filter(self, site=None, manager=None, everyday=None, sort='SiteName'):
+
+        query = "SELECT Name as SiteName, Manager, OpenEveryday FROM site AS s JOIN " \
+                "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager " \
+                "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername " \
+                "WHERE 1=1 "
+        if site:
+           query += f"AND Name = '{site}' "
+
+        if manager:
+            query += f"AND Manager = '{manager}' "
+
+        if everyday is not None:
+            query += f"AND OpenEveryday = {everyday} "
+
+        query += f'ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            sites = cursor.fetchall()
+
+        for i in sites:
+            for key in i:
+                i[key] = str(i[key])
+        sites = {i+1: sites[i] for i in range(len(sites))}
+        print(sites)
+        for d in sites.values():
+            d['OpenEveryday'] = 'false' if d['OpenEveryday'] == '0' else 'true'
+
+        if sites == {}:
+            return self.load()[0]
+        else:
+            return sites
+
+    def delete(self, sitename):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM site WHERE Name = '{sitename}'")
+            self.connection.commit()
