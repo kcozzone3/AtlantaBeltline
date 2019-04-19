@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = ''
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -3030,8 +3030,8 @@ class visitorExploreEvent(Toplevel):
         self.SQL = Queries.visitorExploreEvent(db)
 
     def display(self):
-        events = self.SQL.load()
-        #events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load()
+        #events = self.SQL.load()
+        events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load()
 
         self.eventName = StringVar()
         self.descriptionKeyword = StringVar()

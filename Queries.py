@@ -625,9 +625,7 @@ class visitorExploreEvent:
 
     def load(self):
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT Name as SiteName, Manager, OpenEveryday FROM site AS s JOIN "
-                           "(SELECT ManUsername, Concat(FirstName, ' ', LastName) as Manager FROM manager "
-                           "JOIN user ON ManUsername = Username) as tmp ON tmp.ManUsername = s.ManUsername")
+            cursor.execute("SELECT EventName as EventName, SiteName, TicketPrice, TicketRemaining, TotalVisits, MyVisits FROM ")
             events = cursor.fetchall()
 
             for i in events:
@@ -642,7 +640,7 @@ class visitorExploreEvent:
             # cursor.execute("SELECT Name FROM site")
             # sitenames = [d['Name'] for d in cursor.fetchall()]
 
-        return events#, sitenames, managers
+        return events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits
 
     def filter(self, site=None, manager=None, everyday=None, sort='SiteName'):
 
