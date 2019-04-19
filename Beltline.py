@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'PASSWORD'
+MYSQL_PASSWORD = ''
 #######################################
 
 
@@ -1274,29 +1274,9 @@ class VisitorFunctionality(Toplevel):
         self.destroy()
 
     def onVisitorFunctionalityExploreEventButtonClicked(self):
-        pass
-        """
-        def __init__(self, master):
-            Toplevel.__init__(self)
-            self.master = master
-            self.title('ExploreEvent -- Visitor')
-            self.config(background='#ffffff')
-        def display(self):
-            self.eventName = StringVar()
-            self.registrationLastName = StringVar()
-            self.registrationUserName = StringVar()
-            self.registrationPassword = StringVar()
-            self.registrationConfirmPassword = StringVar()
-            registerLabel = Label(self, text="User Only Registration", font="Helvetica",
-                              foreground='#000000', background='#ffffff')
-            registerLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E, columnspan=2)
-            firstNameLabel = Label(self, text="First Name", background='#ffffff')
-            firstNameLabel.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
-            firstNameBox = Entry(self, textvariable=self.registrationFirstName, width=20)
-            firstNameBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-            """
-
-        #TODO
+        exploreEventWindow = visitorExploreEvent(self)
+        self.withdraw()
+        exploreEventWindow.display()
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
         exploreSiteWindow = visitorExploreSite(self)
@@ -2929,6 +2909,15 @@ class visitorExploreEvent(Toplevel):
         self.siteName = StringVar()
         self.startDate = StringVar()
         self.endDate = StringVar()
+        self.TVR1 = StringVar()
+        self.TVR2 = StringVar()
+        self.TPR1 = StringVar()
+        self.TPR2 = StringVar()
+        self.TPR2 = StringVar()
+        self.includeVisited = StringVar()
+        self.includeVisited.set("0")
+        self.includeSoldOut = StringVar()
+        self.includeSoldOut.set("0")
         eventNameLabel = Label(self, text="Event Name", foreground='#000000', background='#ffffff')
         eventNameLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         descriptionKeywordLabel = Label(self, text="Description Keyword", foreground='#000000', background='#ffffff')
@@ -2939,22 +2928,40 @@ class visitorExploreEvent(Toplevel):
         startDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
         endDateLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        TVRLabel = Label(self, text="Total Visits Range", foreground='#000000', background='#ffffff')
+        TVRLabel.grid(row=6, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        TPRLabel = Label(self, text="Ticket Price Range", foreground='#000000', background='#ffffff')
+        TPRLabel.grid(row=7, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        includeVisitedCheckbutton = Checkbutton(self, variable=self.includeVisited, text="Include Visited", foreground='#000000', background='#ffffff')
+        includeVisitedCheckbutton.grid(row=8, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        includeSoldOutCheckbutton = Checkbutton(self, variable=self.includeSoldOut, text="Include Sold Out", foreground='#000000', background='#ffffff')
+        includeSoldOutCheckbutton.grid(row=9, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
         filterButton = Button(self, text="Filter", background='#4286f4')
-        filterButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        filterButton.grid(row=10, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
         eventDetailButton = Button(self, text="Event Detail", background='#4286f4')
-        eventDetailButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        eventDetailButton.grid(row=11, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        backButton.grid(row=12, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
         eventNameBox = Entry(self, textvariable=self.eventName, width=20)
         eventNameBox.grid(row=1, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         descriptionKeywordBox = Entry(self, textvariable=self.descriptionKeyword, width=20)
         descriptionKeywordBox.grid(row=2, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         siteNameBox = Entry(self, textvariable=self.siteName, width=20)
-        siteNameBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        siteNameBox.grid(row=3, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         startDateBox = Entry(self, textvariable=self.startDate, width=20)
-        startDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        startDateBox.grid(row=4, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         endDateBox = Entry(self, textvariable=self.endDate, width=20)
-        endDateBox.grid(row=5, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        endDateBox.grid(row=5, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TVR1Box = Entry(self, textvariable=self.TVR1, width=20)
+        TVR1Box.grid(row=6, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TVR2Box = Entry(self, textvariable=self.TVR2, width=20)
+        TVR2Box.grid(row=6, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
+        TPR1Box = Entry(self, textvariable=self.TPR1, width=20)
+        TPR1Box.grid(row=7, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TPR2Box = Entry(self, textvariable=self.TPR2, width=20)
+        TPR2Box.grid(row=7, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
 
     def back(self):
         self.master.deiconify()
