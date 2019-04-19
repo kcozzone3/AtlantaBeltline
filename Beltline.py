@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Gwhiteley99'
+MYSQL_PASSWORD = ''
 #######################################
 
 
