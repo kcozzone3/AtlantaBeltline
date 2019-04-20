@@ -625,7 +625,7 @@ class visitorExploreEvent:
 
     def load(self, identifier):
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT EventName, SiteName, Price, (Capacity-VENum) AS TicketsRemaining, VENum AS TotalVisits, MyCount AS MyVisits FROM event AS e LEFT JOIN (SELECT EventName AS VEEventName, SiteName AS VESiteName, StartDate AS VEStartDate, COUNT(*) AS VEnum FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.VEEventName AND e.SiteName = ve.VESiteName AND e.StartDate = ve.VEStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = "+"\""+identifier+"\""+" GROUP BY EventName) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)")
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate))")
             events = cursor.fetchall()
 
             for i in events:
@@ -634,11 +634,23 @@ class visitorExploreEvent:
 
             events = {1: events[1]}  # Returns just col names, as we have to load a blank table to start with.
 
-            # cursor.execute("SELECT DISTINCT ManUsername, FirstName, LastName FROM user JOIN manager ON Username = ManUsername")
-            # managers = [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
+            # cursor.execute("")
+            # eventNames = [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
 
-            # cursor.execute("SELECT Name FROM site")
-            # sitenames = [d['Name'] for d in cursor.fetchall()]
+            # cursor.execute("")
+            # siteNames = []
+
+            # cursor.execute("")
+            # ticketPrices = []
+
+            # cursor.execute("")
+            # ticketRemainings = []
+
+            # cursor.execute("")
+            # totalVisits = []
+
+            # cursor.execute("")
+            # myVisits = []
 
         return events#, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits
 
