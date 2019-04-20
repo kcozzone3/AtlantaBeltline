@@ -619,13 +619,13 @@ class CreateTransit:
                 self.connection.commit()
 
 class visitorExploreEvent:
-    """(34) Visitor Explore Event"""
+    """(33) Visitor Explore Event"""
     def __init__(self, connection):
         self.connection = connection
 
     def load(self):
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT EventName as EventName, SiteName, TicketPrice, TicketRemaining, TotalVisits, MyVisits FROM ")
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity-VENum) AS TicketsRemaining, VENum AS TotalVisits FROM event AS e JOIN (SELECT EventName AS VEEventName, SiteName AS VESiteName, StartDate AS VEStartDate, COUNT(*) AS VEnum FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.VEEventName AND e.SiteName = ve.VESiteName AND e.StartDate = ve.VEStartDate)")
             events = cursor.fetchall()
 
             for i in events:
@@ -640,7 +640,7 @@ class visitorExploreEvent:
             # cursor.execute("SELECT Name FROM site")
             # sitenames = [d['Name'] for d in cursor.fetchall()]
 
-        return events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits
+        return events#, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits
 
     def filter(self, site=None, manager=None, everyday=None, sort='SiteName'):
 
