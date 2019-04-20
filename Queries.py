@@ -667,11 +667,13 @@ class visitorExploreEvent:
         if keyword is not None:
            query += f" AND Description LIKE '%{keyword}%' "
 
-        if startDate is not None:
-           query += f" AND startDate = '{startDate}' "
-
-        if endDate is not None:
-           query += f" AND endDate = '{endDate}' "
+        if startDate is not None and endDate is not None:
+           query += f" AND startDate BETWEEN '{startDate}' AND '{endDate}' "
+           query += f" AND endDate BETWEEN '{startDate}' AND '{endDate}' "
+        elif startDate is not None:
+           query += f" AND startDate >= '{startDate}' "
+        elif endDate is not None:
+           query += f" AND endDate <= '{endDate}' "
 
         if TVR1 is not None:
            query += f" AND IFNULL(TotalVisits, 0) >= '{TVR1}' "
@@ -707,6 +709,6 @@ class visitorExploreEvent:
         #     d['OpenEveryday'] = 'false' if d['OpenEveryday'] == '0' else 'true'
 
         if events == {}:
-            return self.load()[0]
+            return self.load(identifier)[0]
         else:
             return events
