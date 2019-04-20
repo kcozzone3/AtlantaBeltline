@@ -686,4 +686,42 @@ class visitorVisitHistory:
 
         return history
 
+"""Scrren 30"""
+class ViewDailyDetail:
+    """(30) MANAGER DAILY DETAIL"""
+    def __init__(self, connection):
+        self.connection = connection
 
+    def load(self, username, date, sort='EventName'):
+        """Given username and date, return a dict of daily detail information of the event.
+            Duplicate event names are returned b/c of staff name, have to parse in the frontend"""
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"CREATE OR REPLACE VIEW `Staff_view` AS select StaffUsername, a.EventName, "\
+                f"a.SiteName, a.StartDate from AssignTo as a join (select EventName, SiteName, "\
+                f"StartDate from AssignTo where StaffUsername = '{username}') as b on "\
+                f"a.EventName = b.EventName and  a.SiteName = b.SiteName and a.StartDate = b.StartDate;")
+            self.connection.commit()
+
+            cursor.execute(f"CREATE OR REPLACE VIEW `CountVis_view` AS select count(VisUsername) AS "\
+                f"CountVis, EventName, SiteName, StartDate, Date from visitevent group by "
+                f"EventName, startDate, SiteName, Date;")
+            self.connection.commit()
+
+            query = "select EventName, StaffUsername, CountVis, (CountVis * Price) as 'Revenue' from "\
+            f"(select t1.EventName, t1.StaffUserName, t2.CountVis, t2.Date, t3.Price from Staff_view as "\
+            f"t1 join CountVis_view as t2 on t1.EventName = t2.EventName and t1.SiteName = t2.SiteName and "\
+            f"t1.StartDate = t2.StartDate join Event as t3 on t1.EventName = t3.EventName and t1.SiteName = "\
+            f"t3.SiteName and t1.StartDate = t3.StartDate) as BigTable "
+
+            query += f"where Date = '{date}' order by '{sort}';"
+            cursor.execute(query)
+            dailyDetails = cursor.fetchall()
+
+            if dailyDetails:
+                for i in dailyDetails:
+                    for key in i:
+                        i[key] = str(i[key])
+                dailyDetails = {i+1: dailyDetails[i] for i in range(len(dailyDetails))}
+            else:
+                dailyDetails = {}
+        return dailyDetails
