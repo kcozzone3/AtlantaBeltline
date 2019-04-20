@@ -623,9 +623,9 @@ class visitorExploreEvent:
     def __init__(self, connection):
         self.connection = connection
 
-    def load(self):
+    def load(self, identifier):
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT EventName, SiteName, Price, (Capacity-VENum) AS TicketsRemaining, VENum AS TotalVisits FROM event AS e JOIN (SELECT EventName AS VEEventName, SiteName AS VESiteName, StartDate AS VEStartDate, COUNT(*) AS VEnum FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.VEEventName AND e.SiteName = ve.VESiteName AND e.StartDate = ve.VEStartDate)")
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity-VENum) AS TicketsRemaining, VENum AS TotalVisits, MyCount AS MyVisits FROM event AS e LEFT JOIN (SELECT EventName AS VEEventName, SiteName AS VESiteName, StartDate AS VEStartDate, COUNT(*) AS VEnum FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.VEEventName AND e.SiteName = ve.VESiteName AND e.StartDate = ve.VEStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = "+"\""+identifier+"\""+" GROUP BY EventName) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)")
             events = cursor.fetchall()
 
             for i in events:
