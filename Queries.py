@@ -144,6 +144,9 @@ class TransitHistory:
         """Given a username, returns a list of tuples that represents all of the transits a User has taken, and a list
         of sites for the Contain Site filter dropdown."""
 
+        # DO NOT DELETE THIS COMMENT
+        # SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'take';
+        # Just in case the TAs get mean and delete every transit and ask us to load TransitHistory, this is the fix ^
         with self.connection.cursor() as cursor:
             cursor.execute(f"SELECT Date, Route, TransportType, Price FROM transit_connect NATURAL JOIN take")
             transits = cursor.fetchall()
@@ -413,7 +416,6 @@ class ManageSite:
             self.connection.commit()
 
 
-
 class EditSite:
     """(19) ADMIN MANAGE SITE"""
     def __init__(self, connection):
@@ -508,7 +510,7 @@ class ManageTransit:
                 for key in i:
                     i[key] = ""
 
-                    transits = {1: transits[1]}  # Returns just col names, as we have to load a blank table to start with.
+            transits = {1: transits[1]}  # Returns just col names, as we have to load a blank table to start with.
 
             cursor.execute("SELECT Name FROM site")
             sitenames = [d['Name'] for d in cursor.fetchall()]
@@ -517,12 +519,14 @@ class ManageTransit:
 
     def filter(self, sitename=None, ttype=None, route=None, p1=None, p2=None, sort='TransportType'):
 
-        query = "SELECT Route, TransportType, Price, NumSites AS '# Connected Sites', " \
-                "NumTaken as '# Transits Logged'  FROM transit_connect NATURAL JOIN " \
-                "(SELECT TransportType, Route, COUNT(*) as NumTaken FROM take GROUP BY TransportType, Route) " \
-                "as tmp WHERE 1=1 "
+        query = "SELECT Route, TransportType, Price, NumSites AS '# Connected Sites', NumTaken as '# Transits Logged'  " \
+                "FROM transit_connect NATURAL JOIN ((SELECT TransportType, Route, COUNT(*) as NumTaken FROM take " \
+                "NATURAL JOIN transit Group By TransportType, Route) UNION (SELECT TransportType, Route, 0 " \
+                "FROM transit WHERE (TransportType, Route) NOT IN (SELECT TransportType, Route FROM take) " \
+                "GROUP BY TransportType, Route)) as tmp WHERE 1=1 "  # What a monster query.
+
         if sitename:
-           query += f"AND SiteName = '{sitename}' "
+            query += f"AND SiteName = '{sitename}' "
 
         if ttype:
             query += f"AND TransportType = '{ttype}' "
@@ -553,6 +557,11 @@ class ManageTransit:
             return self.load()[0]
         else:
             return transits
+
+    def delete(self, ttype, route):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM transit WHERE TransportType = '{ttype}' AND Route = '{route}'")
+            self.connection.commit()
 
 
 class EditTransit:
@@ -590,6 +599,7 @@ class EditTransit:
                 print(e)
                 return -1
 
+
 class CreateTransit:
     """(24) ADMIN CREATE TRANSIT"""
     def __init__(self, connection):
@@ -597,26 +607,435 @@ class CreateTransit:
 
     def load(self):
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT FirstName, LastName FROM user JOIN manager ON Username = ManUsername "
-                           "WHERE ManUsername NOT IN (SELECT ManUsername FROM site)")
-            return [f"{d['FirstName']} {d['LastName']}" for d in cursor.fetchall()]
-
-    def create(self, sitename, address, zipcode, manager, everyday):
-        with self.connection.cursor() as cursor:
-            cursor.execute("SELECT ManUsername FROM user JOIN manager ON Username = ManUsername "
-                           f"WHERE Concat(FirstName, ' ', LastName) = '{manager}'")
-            manager = cursor.fetchone()['ManUsername']
-
             cursor.execute("SELECT Name FROM site")
-            sites = [d['Name'] for d in cursor.fetchall()]
 
-            if sitename in sites:
+            sites = [d['Name'] for d in cursor.fetchall()]
+            return sites
+
+    def create(self, ttype, route, price, sites):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT TransportType, Route FROM transit")
+            transits = [(d['TransportType'], d['Route']) for d in cursor.fetchall()]
+
+            if (ttype, route) in transits:
                 return -1
 
             else:
-                cursor.execute(f"INSERT INTO Site VALUES ('{sitename}', '{address}', {zipcode}, "
-                               f"{'true' if everyday else 'false'}, '{manager}')")
+                cursor.execute(f"INSERT INTO transit VALUES ('{ttype}', '{route}', {price})")
+                self.connection.commit()
+                for site in sites:
+                    cursor.execute(f"INSERT INTO connect VALUES ('{site}', '{ttype}', '{route}')")
+                    self.connection.commit()
+
+
+class ManageEvent:
+    """(25) MANAGER MANAGE EVENT"""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT EventName, SiteName, StartDate, StaffCount, Duration, Visits, Revenue FROM manage_event")
+            events = cursor.fetchall()
+
+            for i in events:
+                for key in i:
+                    i[key] = ""
+
+            events = {1: events[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+        return events
+
+    def filter(self, manager, name=None, keyword=None, d1=None, d2=None, dur1=None, dur2=None, vis1=None, vis2=None, rev1=None, rev2=None, sort='EventName'):
+
+        query = f"SELECT EventName, SiteName, StartDate, StaffCount, Duration, Visits, Revenue FROM manage_event WHERE ManUsername = '{manager}' "
+
+        if name:
+            query += f"AND EventName LIKE '%{name}%' "
+
+        if keyword:
+            query += f"AND Description LIKE '%{keyword}%' "
+
+        if d1 and d2:
+            query += f"AND StartDate IN (SELECT StartDate FROM event WHERE StartDate BETWEEN {d1} AND {d2}) "
+        elif d1:
+            query += f"AND StartDate IN (SELECT StartDate FROM event WHERE StartDate >= {d1}) "
+        elif d2:
+            f"AND StartDate IN (SELECT StartDate FROM event WHERE StartDate <= {d2}) "
+
+        if dur1 and dur2:
+            query += f"AND Duration BETWEEN {dur1} AND {dur2} "
+        elif d1:
+            query += f"AND Duration >= {dur1} "
+        elif d2:
+            f"AND Duration <= {dur2} "
+
+        if vis1 and vis2:
+            query += f"AND Visits BETWEEN {vis1} AND {vis2} "
+        elif vis1:
+            query += f"AND Visits >= {vis1} "
+        elif vis2:
+            f"AND Visits <= {vis2} "
+
+        if rev1 and rev2:
+            query += f"AND Revenue BETWEEN {rev1} AND {rev1} "
+        elif rev1:
+            query += f"AND Revenue >= {rev1} "
+        elif rev2:
+            f"AND Revenue <= {rev2} "
+
+        query += f'GROUP BY EventName, SiteName, StartDate ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            events = cursor.fetchall()
+
+        for i in events:
+            for key in i:
+                i[key] = str(i[key])
+        events = {i + 1: events[i] for i in range(len(events))}
+
+        if events == {}:
+            return self.load()
+        else:
+            return events
+
+    def delete(self, eventname, sitename, startdate):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM event WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}'")
+
+
+class EditEvent:
+    """(26) MANAGER EDIT EVENT"""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, manager,  eventname, sitename, startdate):
+        with self.connection.cursor() as cursor:
+
+            cursor.execute("SELECT Price, EndDate, MinStaffReq, Capacity, Description FROM manage_event WHERE "
+                           f"ManUsername = '{manager}' AND EventName = '{eventname}' AND StartDate = '{startdate}'")
+            event = cursor.fetchone()
+            price, enddate, minstaffreq, cap, desc = event['Price'], event['EndDate'], event['MinStaffReq'], event['Capacity'], event['Description']
+
+            cursor.execute(f"Select DISTINCT(CONCAT(FirstName, ' ', LastName, ' (', StaffUsername, ')')) AS StaffName FROM assignto JOIN user ON StaffUsername = Username "
+                           f"WHERE SiteName = '{sitename}' AND EventName = '{eventname}' AND StartDate = '{startdate}'")
+            cur_staff = [d['StaffName'] for d in cursor.fetchall()]
+
+            cursor.execute(f"""
+                            SELECT Distinct(CONCAT(FirstName, ' ', Lastname, ' (', StaffUsername, ')')) AS StaffName FROM assignto JOIN user ON StaffUsername = Username 
+                            WHERE StaffUsername NOT IN (SELECT StaffUsername from assignto NATURAL JOIN event WHERE SiteName = '{sitename}' AND EventName = '{eventname}' AND StartDate = '{startdate}') 
+                            AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto WHERE StartDate BETWEEN '{startdate}' AND '{enddate}')) 
+                            AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE EndDate BETWEEN '{startdate}' AND '{enddate}'));
+                            """)
+            avail_staff = [d['StaffName'] for d in cursor.fetchall()]
+
+            cursor.execute(f"""
+                        SELECT gen_date AS Date, IFNULL(DailyVisits, 0) AS DailyVisits, IFNULL(DailyRevenue, 0) AS DailyRevenue FROM
+                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue 
+                        FROM visitevent 
+                        NATURAL JOIN 
+                        event 
+                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc 
+                       
+                        RIGHT JOIN 
+                        dates_view 
+                        ON gen_date = Date
+                        WHERE gen_date BETWEEN '{startdate}' AND '{enddate}'  
+                        """)
+            dailies = cursor.fetchall()
+
+            for i in dailies:
+                for key in i:
+                    i[key] = ""
+
+            dailies = {1: dailies[0]}  # Returns just col names, as we have to load a blank table to start with.
+
+        return price, enddate, minstaffreq, cap, cur_staff, avail_staff, desc, dailies
+
+    def filter(self, manager, eventname, sitename, startdate, rev1=None, rev2=None, vis1=None, vis2=None, sort='Date'):
+        print(rev2)
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT EndDate FROM event WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}'")
+            enddate = cursor.fetchone()['EndDate']
+
+        query = f"""
+                        SELECT gen_date AS Date, IFNULL(DailyVisits, 0) AS DailyVisits, IFNULL(DailyRevenue, 0) AS DailyRevenue FROM 
+                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue 
+                        FROM visitevent 
+                        NATURAL JOIN 
+                        event 
+                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc 
+                       
+                        RIGHT JOIN 
+                        dates_view 
+                        ON gen_date = Date
+                        WHERE gen_date BETWEEN '{startdate}' AND '{enddate} '
+                """
+
+        if vis1 and vis2:
+            query += f"AND IFNULL(DailyVisits, 0) BETWEEN {vis1} AND {vis2} "
+        elif vis1:
+            query += f"AND IFNULL(DailyVisits, 0) >= {vis1} "
+        elif vis2:
+            query += f"AND IFNULL(DailyVisits, 0) <= {vis2} "
+
+        if rev1 and rev2:
+            query += f"AND IFNULL(DailyRevenue, 0) BETWEEN {rev1} AND {rev2} "
+        elif rev1:
+            query += f"AND IFNULL(DailyRevenue, 0) >= {rev1} "
+        elif rev2:
+            query += f"AND IFNULL(DailyRevenue, 0) <= {rev2} "
+
+        query += f"ORDER BY {sort} DESC"
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            dailies = cursor.fetchall()
+
+        for i in dailies:
+            for key in i:
+                i[key] = str(i[key])
+        dailies = {i+1: dailies[i] for i in range(len(dailies))}
+
+        if dailies == {}:
+            return self.load(manager, eventname, sitename, startdate)[-1]
+        else:
+            return dailies
+
+    def submit(self, eventname, sitename, startdate, desc, staff):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM assignto WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}'")
+            self.connection.commit()
+            for i in staff:
+                print(i[i.find('(')+1:i.find(')')])
+                cursor.execute(f"INSERT INTO assignto VALUES ('{i[i.find('(')+1:i.find('}')]}', '{sitename}', '{eventname}', '{startdate}')")
                 self.connection.commit()
 
+            cursor.execute(f'UPDATE event SET Description = "{desc}" WHERE EventName = "{eventname}" AND SiteName = "{sitename}" AND StartDate = "{startdate}"')
+            self.connection.commit()
+
+
+class CreateEvent:
+    """(27) MANAGER CREATE EVENT"""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        pass
+
+    def get_staff(self, d1, d2):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Distinct(CONCAT(FirstName, ' ', Lastname, ' (', StaffUsername, ')')) AS StaffName FROM assignto JOIN user ON StaffUsername = Username "
+                           f"WHERE StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto WHERE StartDate BETWEEN '{d1}' AND '{d2}')) "
+                           f"AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE EndDate BETWEEN '{d1}' AND '{d2}'))")
+            return [d['StaffName'] for d in cursor.fetchall()]
+
+    def create(self, manager, eventname, price, cap, minstaff, d1, d2, desc, staff):
+        with self.connection.cursor() as cursor:
+            try:
+                cursor.execute(f"SELECT Name FROM site WHERE ManUsername = '{manager}'")
+                sitename = cursor.fetchone()['Name']
+
+                cursor.execute(f"INSERT INTO event VALUES ('{sitename}', '{eventname}', '{d1}', '{d2}', {price}, {cap}, {minstaff}, '{desc}')")
+
+                for i in staff:
+                    cursor.execute(f"INSERT INTO assignto VALUES ('{i[i.find('(')+1:i.find('}')]}', '{sitename}', '{eventname}', '{d1}')")
+
+                self.connection.commit()
+
+            except:
+                return -1
+
+
+class ManageStaff:
+    """(28) MANAGER MANAGE STAFF"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT CONCAT(FirstName, ' ', LastName) AS Name, COUNT(*) As NumShifts FROM "
+                           f"assignto JOIN user on assignto.StaffUsername = user.Username GROUP BY Name")
+            staff = cursor.fetchall()
+
+            for i in staff:
+                for key in i:
+                    i[key] = ""
+
+            staff = {1: staff[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+            cursor.execute(f"SELECT DISTINCT(Name) FROM site")
+            sites = cursor.fetchall()
+            sites = [d['Name'] for d in sites]
+
+        return staff, sites
+
+    def filter(self, site=None, fname=None, lname=None, d1=None, d2=None, sort='Name'):
+        query = "SELECT CONCAT(FirstName, ' ', LastName) AS Name, COUNT(*) As NumShifts FROM " \
+                "assignto JOIN user on assignto.StaffUsername = user.Username WHERE 1=1 "
+
+        if site:
+            query += f"AND SiteName = '{site}'"
+        if fname:
+            query += f"AND FirstName LIKE '%{fname}%' "
+        if lname:
+            query += f"AND LastName LIKE '%{lname}%' "
+        if d1 and d2:
+            query += f"AND StartDate BETWEEN {d1} AND {d2} "
+        elif d1:
+            query += f"AND StartDate >= {d1} "
+        elif d2:
+            query += f"AND StartDate <= {d2} "
+
+        query += f"GROUP BY Name ORDER BY {sort}"
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            staff = cursor.fetchall()
+
+        for i in staff:
+            for key in i:
+                i[key] = str(i[key])
+        staff = {i + 1: staff[i] for i in range(len(staff))}
+
+        if staff == {}:
+            return self.load()[0]
+        else:
+            return staff
+
+
+class SiteReport:
+    """(29) MANAGER SITE REPORT"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+f"""
+SELECT Date AS Date, IFNULL(EventCount, 0) AS EventCount, IFNULL(StaffCount, 0) AS StaffCount, IFNULL(TotalVisits, 0) AS TotalVisits, IFNULL(TotalRevenue, 0) AS TotalRevenue from 
+(SELECT gen_date AS Date, Count(*) AS EventCount FROM event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS EC 
+NATURAL JOIN 
+(SELECT gen_date AS Date, Count(*) AS StaffCount FROM assignto NATURAL JOIN event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS SC 
+NATURAL JOIN 
+(SELECT gen_date AS Date, IFNULL(ETotal, 0) + IFNULL(STotal, 0) AS TotalVisits FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS ETotal FROM visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS E ON gen_date = Date 
+NATURAL LEFT JOIN (SELECT Date, COUNT(VisUsername) AS STotal FROM visitsite WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS S) AS TV 
+NATURAL LEFT JOIN 
+(SELECT Date, Q.Total AS TotalRevenue FROM (SELECT Date, Price * Count(VisUsername) AS Total FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS Q) AS TR WHERE 1=1 
+""")
+            dailies = cursor.fetchall()
+            for i in dailies:
+                for key in i:
+                    i[key] = ""
+
+        return {1: {'Date': '', 'EventCount': '', 'StaffCount': '', 'TotalVisits': '', 'TotalRevenue': ''}}
+
+    def filter(self, manager, startdate, enddate, e1, e2, s1, s2, rev1, rev2, vis1, vis2, sort='Date'):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Name FROM site WHERE ManUsername = '{manager}'")
+            try:
+                sitename = cursor.fetchone()['Name']
+            except:  # If the manager has no site assigned.
+                return self.load()
+
+        query = f"""
+SELECT gen_date AS Date, EventCount, StaffCount, TotalVisits, TotalRevenue from 
+(SELECT gen_date, IFNULL(StaffCount, 0) AS StaffCount FROM (SELECT gen_date FROM dates_view WHERE gen_date  BETWEEN '{startdate}' AND '{enddate}') AS D2 LEFT JOIN (SELECT gen_date AS Date, Count(*) AS StaffCount FROM assignto NATURAL JOIN event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS SC1 ON Date = gen_date) AS SC
+NATURAL JOIN
+(SELECT gen_date, IFNULL(EventCount, 0) AS EventCount FROM (SELECT gen_date FROM dates_view WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS D1 LEFT JOIN (SELECT gen_date AS Date, Count(*) AS EventCount FROM event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS EC1 On Date = gen_date) AS EC
+NATURAL JOIN
+(SELECT gen_date, ETot + STot AS TotalVisits FROM 
+	(SELECT gen_date, IFNULL(ETotal, 0) AS ETot FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS ETotal FROM visitevent WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS E ON gen_date = Date WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS E
+	NATURAL JOIN
+	(SELECT gen_date, IFNULL(STotal, 0) AS STot FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS STotal FROM visitsite WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS S ON gen_date = Date WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS S) AS VTot
+NATURAL JOIN
+(SELECT gen_date, IFNULL(TotalRevenue, 0) AS TotalRevenue FROM (SELECT gen_date FROM dates_view WHERE gen_date  BETWEEN '{startdate}' AND '{enddate}') AS D4 LEFT JOIN (SELECT Date, Price * Count(VisUsername) AS TotalRevenue FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS TR1 ON Date = gen_date) AS RTot 
+WHERE 1=1 
+"""
+        if e1 and e2:
+            query += f"AND EventCount BETWEEN {e1} AND {e2} "
+        elif e1:
+            query += f"AND EventCount >= {e1} "
+        elif e2:
+            query += f"AND EventCount <= {e2} "
+
+        if s1 and s2:
+            query += f"AND StaffCount BETWEEN {s1} AND {s2} "
+        elif s1:
+            query += f"AND StaffCount >= {s1} "
+        elif s2:
+            query += f"AND StaffCount <= {s2} "
+
+        if vis1 and vis2:
+            query += f"AND TotalVisits BETWEEN {vis1} AND {vis2} "
+        elif vis1:
+            query += f"AND TotalVisits >= {vis1} "
+        elif vis2:
+            f"AND Visits <= {vis2} "
+
+        if rev1 and rev2:
+            query += f"AND TotalRevenue BETWEEN {rev1} AND {rev1} "
+        elif rev1:
+            query += f"AND TotalRevenue >= {rev1} "
+        elif rev2:
+            f"AND TotalRevenue <= {rev2} "
+
+        query += f"ORDER BY {sort}"
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            dailies = cursor.fetchall()
+
+        for i in dailies:
+            for key in i:
+                i[key] = str(i[key])
+        dailies = {i + 1: dailies[i] for i in range(len(dailies))}
+
+        if dailies == {}:
+            return self.load()
+        else:
+            return dailies
+
+
+class DailyDetail:
+    """(30) MANAGER DAILY DETAIl"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def filter(self, manager, date, sort='EventName'):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT Name FROM site WHERE ManUsername = '{manager}'")
+            try:
+                sitename = cursor.fetchone()['Name']
+            except:  # If the manager has no site assigned.
+                return {1: {'EventName': '', 'StaffNames': '', 'NumVisits': '', 'Revenue': ''}}
+
+        query = f"""
+                SELECT EventName, StaffNames, NumVisits, Revenue FROM(	
+                    (SELECT EventName, COUNT(VisUsername) AS NumVisits, COUNT(VisUsername) * Price AS Revenue FROM event NATURAL JOIN visitevent WHERE visitevent.Date = '{date}' AND '{date}' BETWEEN StartDate AND EndDate AND event.SiteName = '{sitename}' GROUP BY EventName) AS A
+                NATURAL JOIN
+                    (SELECT EventName, GROUP_CONCAT(CONCAT(FirstName, ' ', LastName) ORDER BY FirstName {'ASC' if sort == 'StaffNames' else 'DESC'}) AS StaffNames FROM event NATURAL JOIN assignto JOIN user ON Username = StaffUsername WHERE  '{date}' BETWEEN StartDate AND EndDate AND SiteName = '{sitename}' GROUP BY EventName ORDER BY FirstName DESC) AS B)
+                ORDER BY {sort}
+                """
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            events = cursor.fetchall()
+
+        for i in events:
+            for key in i:
+                i[key] = str(i[key])
+        events = {i + 1: events[i] for i in range(len(events))}
+
+        if events == {}:
+            return {1: {'EventName': '', 'StaffNames': '', 'NumVisits': '', 'Revenue': '', 'TotalRevenue': ''}}
+        else:
+            return events
 
 

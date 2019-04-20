@@ -100,7 +100,7 @@ insert into manager values ('manager2');
 insert into manager values ('manager3');
 insert into manager values ('manager4');
 insert into manager values ('manager5');
-
+ 
 insert into site values ('Piedmont Park', '400 Park Drive Northeast', '30306', true, 'manager2');
 insert into site values ('Atlanta Beltline Center', '112 Krog Street Northeast', '30307', false, 'manager3');
 insert into site values ('Historic Fourth Ward Park', '680 Dallas Street Northeast', '30308', true, 'manager4');
