@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = ''
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -3030,8 +3030,7 @@ class visitorExploreEvent(Toplevel):
         self.SQL = Queries.visitorExploreEvent(db)
 
     def display(self):
-        events = self.SQL.load(identifier)
-        #events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load()
+        events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load(identifier)
 
         self.eventName = StringVar()
         self.descriptionKeyword = StringVar()
@@ -3062,13 +3061,13 @@ class visitorExploreEvent(Toplevel):
         sortSiteName = partial(self.filter, 'SiteName')
         sortSiteNameButton = Button(self, command=sortSiteName, text="Sort by Site Name", background='#4286f4')
         sortSiteNameButton.grid(row=17, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-        sortTicketPrice = partial(self.filter, 'TicketPrice')
+        sortTicketPrice = partial(self.filter, 'Price')
         sortTicketPriceButton = Button(self, command=sortTicketPrice, text="Sort by Ticket Price", background='#4286f4')
         sortTicketPriceButton.grid(row=18, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-        sortTicketRemaining = partial(self.filter, 'TicketRemaining')
+        sortTicketRemaining = partial(self.filter, 'TicketsRemaining')
         sortTicketRemainingButton = Button(self, command=sortTicketRemaining, text="Sort by Ticket Remaining", background='#4286f4')
         sortTicketRemainingButton.grid(row=19, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-        sortTotalVisits = partial(self.filter, 'TotalVisits')
+        sortTotalVisits = partial(self.filter, 'TotalNumVisits')
         sortTotalVisitsButton = Button(self, command=sortTotalVisits, text="Sort by Total Visits", background='#4286f4')
         sortTotalVisitsButton.grid(row=20, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
         sortMyVisits = partial(self.filter, 'MyVisits')
@@ -3104,8 +3103,8 @@ class visitorExploreEvent(Toplevel):
         eventNameBox.grid(row=5, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         descriptionKeywordBox = Entry(self, textvariable=self.descriptionKeyword, width=20)
         descriptionKeywordBox.grid(row=6, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-        #siteNameDropdown = OptionMenu(self, self.siteName, *siteNames + ['Any'])
-        siteNameDropdown = OptionMenu(self, self.siteName, ['Any'])
+
+        siteNameDropdown = OptionMenu(self, self.siteName, *siteNames + ['Any'])
         siteNameDropdown.grid(row=7, column=3, padx=(2, 5), pady=(0, 4), sticky=W)
         startDateBox = Entry(self, textvariable=self.startDate, width=20)
         startDateBox.grid(row=8, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
@@ -3121,18 +3120,18 @@ class visitorExploreEvent(Toplevel):
         TPR2Box.grid(row=11, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
 
     def filter(self, sort=None):
-        if sort and self.resultTable.model.getData()[1]['SiteName'] == '':
-           messagebox.showwarning('Error', 'You must have data in order to sort')
-           return
+        # if sort and self.resultTable.model.getData()[1]['SiteName'] == '':
+        #    messagebox.showwarning('Error', 'You must have data in order to sort')
+        #    return
 
-        site, manager, everyday = self.site.get(), self.manager.get(), self.everyday.get()
+        event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = self.eventName.get(), self.siteName.get(), self.descriptionKeyword.get(), self.startDate.get(), self.endDate.get(), self.TVR1.get(), self.TVR2.get(), self.TPR1.get(), self.TPR2.get(), self.includeVisited.get(), self.includeSoldOut.get()
 
         conv = {'': None, 'Any': None}
-        site, manager, everyday = conv.get(site, site), conv.get(manager, manager), conv.get(everyday, everyday)
+        event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = conv.get(event, event), conv.get(site, site), conv.get(keyword, keyword), conv.get(startDate, startDate), conv.get(endDate, endDate), conv.get(TVR1, TVR1), conv.get(TVR2, TVR2), conv.get(TPR1, TPR1), conv.get(TPR2, TPR2), conv.get(includeVisited, includeVisited), conv.get(includeSoldOut, includeSoldOut)
 
         if sort is None:
-            sort = 'SiteName'
-        sites = self.SQL.filter(site, manager, everyday, sort)
+            sort = 'EventName'
+        sites = self.SQL.filter(identifier, event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut, sort)
 
         self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
         self.resultTable.model.importDict(sites)
