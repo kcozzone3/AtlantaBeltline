@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Gwhiteley99'
+MYSQL_PASSWORD = ''
 #######################################
 
 
@@ -2897,131 +2897,6 @@ class staffViewSchedule(Toplevel):
 
 
 class visitorExploreEvent(Toplevel):
-    # def __init__(self, master):
-    #     Toplevel.__init__(self)
-    #     self.master = master
-    #     self.title('Manage Site')
-    #     self.config(background='#ffffff')
-    #     self.SQL = Queries.ManageSite(db)
-
-    # def display(self):
-    #     sites, sitenames, managers = self.SQL.load()
-
-    #     self.site, self.manager, self.everyday =  StringVar(), StringVar(), StringVar()
-
-    #     self.site.set('Any')
-    #     self.manager.set('Any')
-    #     self.everyday.set('Any')
-
-    #     self.resultTable = TableCanvas(self, editable=True, data=sites,
-    #                                    read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
-    #                                    rows=len(sites), thefont=('Helvetica', 10), autoresizecols=1,
-    #                                    width=150*len(list(sites.values())[0]), height=25*7)
-    #     #self.resultTable.grid(row=0, column=0, rowspan=10, sticky=W + E)
-    #     self.resultTable.show()
-
-    #     backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-    #     backButton.grid(row=13, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
-    #     siteLabel = Label(self, text="Site", font="Helvetica", foreground='#000000', background='#ffffff')
-    #     siteLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
-    #     siteDropdown = OptionMenu(self, self.site, *sitenames + ['Any'])
-    #     siteDropdown.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
-
-    #     manLabel = Label(self, text="Manager", font="Helvetica", foreground='#000000', background='#ffffff')
-    #     manLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
-    #     manDropdown = OptionMenu(self, self.manager, *managers + ['Any'])
-    #     manDropdown.grid(row=3, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
-
-    #     everydayLabel = Label(self, text="Open Everyday", font="Helvetica", foreground='#000000', background='#ffffff')
-    #     everydayLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
-    #     everydayDropdown = OptionMenu(self, self.everyday, *['True', 'False', 'Any'])
-    #     everydayDropdown.grid(row=4, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
-
-    #     filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
-    #     filterButton.grid(row=5, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
-    #     sortName = partial(self.filter, 'Name')
-    #     sortNameButton = Button(self, command=sortName, text="Sort by Name", background='#4286f4')
-    #     sortNameButton.grid(row=6, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
-    #     sortMan = partial(self.filter, 'Manager')
-    #     sortManButton = Button(self, command=sortMan, text="Sort by Manager", background='#4286f4')
-    #     sortManButton.grid(row=7, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
-    #     sortEveryday = partial(self.filter, 'OpenEveryday')
-    #     sortStatusButton = Button(self, command=sortEveryday, text="Sort by Availability per Day", background='#4286f4')
-    #     sortStatusButton.grid(row=8, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
-
-    #     createButton = Button(self, command=self.create, text="Create", background='#4286f4')
-    #     createButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
-
-    #     deleteButton = Button(self, command=self.delete, text="Delete", background='#4286f4')
-    #     deleteButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
-
-    #     editButton = Button(self, command=self.edit, text="Edit", background='#4286f4')
-    #     editButton.grid(row=11, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
-
-
-    # def filter(self, sort=None):
-    #     if sort and self.resultTable.model.getData()[1]['SiteName'] == '':
-    #         messagebox.showwarning('Error', 'You must have data in order to sort')
-    #         return
-
-    #     site, manager, everyday = self.site.get(), self.manager.get(), self.everyday.get()
-
-    #     conv = {'': None, 'Any': None}
-    #     site, manager, everyday = conv.get(site, site), conv.get(manager, manager), conv.get(everyday, everyday)
-
-    #     if sort is None:
-    #         sort = 'SiteName'
-    #     sites = self.SQL.filter(site, manager, everyday, sort)
-
-    #     self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
-    #     self.resultTable.model.importDict(sites)
-    #     self.resultTable.redraw()
-
-    # def back(self):
-    #     self.master.deiconify()
-    #     self.destroy()
-
-
-
-    # def edit(self):
-    #     row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
-    #     sitename = row['SiteName']
-
-    #     if sitename == '':
-    #         messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
-    #                                         'row number to select which transit you are taking.')
-    #         return
-
-
-    #     editSiteWindow = EditSite(self)
-    #     editSiteWindow.display(sitename)
-    #     self.withdraw()
-
-    # def create(self):
-    #     createSiteWindow = CreateSite(self)
-    #     createSiteWindow.display()
-    #     self.withdraw()
-
-    # def delete(self):
-    #     row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
-    #     sitename = row['SiteName']
-
-    #     if sitename == '':
-    #         messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
-    #                                         'row number to select which transit you are taking.')
-    #         return
-
-
-    #     self.SQL.delete(sitename)
-    #     self.resultTable.deleteRow()
-    #     self.resultTable.redrawTable()
-    #     messagebox.showwarning('Success', 'Site successfully deleted.')
-
-
     def __init__(self,master):
         Toplevel.__init__(self)
         self.master = master
