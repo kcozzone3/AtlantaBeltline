@@ -2905,7 +2905,7 @@ class visitorExploreEvent(Toplevel):
         self.SQL = Queries.visitorExploreEvent(db)
 
     def display(self):
-        events, eventNames, siteNames, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load(identifier)
+        events, eventNames, siteNames, startDates, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load(identifier)
 
         self.eventName = StringVar()
         self.descriptionKeyword = StringVar()
@@ -3012,24 +3012,102 @@ class visitorExploreEvent(Toplevel):
         self.resultTable.model.importDict(sites)
         self.resultTable.redraw()
 
-    def onEventDetailClicked(self):
-        visitorEventDetailWindow = visitorEventDetail(self)
-        self.withdraw()
-        visitorEventDetailWindow.display()
-
     def back(self):
         self.master.deiconify()
         self.destroy()
 
+    def onEventDetailClicked(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        eventName = row['EventName']
+        siteName = row['SiteName']
+        startDate = row['StartDate']
+
+        if eventName == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+        visitorEventDetailWindow = visitorEventDetail(self)
+        self.withdraw()
+        visitorEventDetailWindow.display(eventName, siteName, startDate)
+
 
 class visitorEventDetail(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Event Detail')
         self.config(background='#ffffff')
+        self.SQL = Queries.visitorEventDetail(db)
 
-    def display(self):
+    def display(self, eventname, sitename, startdate):
+        eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description = self.SQL.load(identifier, eventname, sitename, startdate)
+
+        self.eventName = StringVar()
+        self.siteName = StringVar()
+        self.startDate = StringVar()
+        self.endDate = StringVar()
+        self.ticketPrice = StringVar()
+        self.ticketsRemaining = StringVar()
+        self.description = StringVar()
+        self.visitDate = StringVar()
+
+        self.eventName.set(eventName)
+        self.siteName.set(siteName)
+        self.startDate.set(startDate)
+        self.endDate.set(endDate)
+        self.ticketPrice.set(ticketPrice)
+        self.ticketsRemaining.set(ticketsRemaining)
+        self.description.set(description)
+
+        eventNameLabel = Label(self, text='Event Name', foreground='#000000', background='#ffffff')
+        eventNameLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        eventNameDataLabel = Label(self, text=self.eventName.get(), foreground='#000000', background='#ffffff')
+        eventNameDataLabel.grid(row=1, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        siteNameLabel = Label(self, text='Site Name', foreground='#000000', background='#ffffff')
+        siteNameLabel.grid(row=2, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        siteNameDataLabel = Label(self, text=self.siteName.get(), foreground='#000000', background='#ffffff')
+        siteNameDataLabel.grid(row=2, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        startDateLabel = Label(self, text='Start Date', foreground='#000000', background='#ffffff')
+        startDateLabel.grid(row=3, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        startDateDataLabel = Label(self, text=self.startDate.get(), foreground='#000000', background='#ffffff')
+        startDateDataLabel.grid(row=3, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        endDateLabel = Label(self, text='End Date', foreground='#000000', background='#ffffff')
+        endDateLabel.grid(row=4, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        endDateDataLabel = Label(self, text=self.endDate.get(), foreground='#000000', background='#ffffff')
+        endDateDataLabel.grid(row=4, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        ticketPriceLabel = Label(self, text='Ticket Price($)', foreground='#000000', background='#ffffff')
+        ticketPriceLabel.grid(row=5, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        ticketPriceDataLabel = Label(self, text=self.ticketPrice.get(), foreground='#000000', background='#ffffff')
+        ticketPriceDataLabel.grid(row=5, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        ticketsRemainingLabel = Label(self, text='Tickets Remaining', foreground='#000000', background='#ffffff')
+        ticketsRemainingLabel.grid(row=6, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        ticketsRemainingDataLabel = Label(self, text=self.ticketsRemaining.get(), foreground='#000000', background='#ffffff')
+        ticketsRemainingDataLabel.grid(row=6, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        descriptionLabel = Label(self, text='Description', foreground='#000000', background='#ffffff')
+        descriptionLabel.grid(row=7, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        descriptionLabelData = Text(self, height=4, width=15, wrap=WORD)
+        descriptionLabelData.insert("1.0", self.description.get())
+        descriptionLabelData.grid(row=7, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
+
+        visitDateLabel = Label(self, text='Visit Date', foreground='#000000', background='#ffffff')
+        visitDateLabel.grid(row=11, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        visitDateDataBox = Entry(self, textvariable=self.visitDate, width=20)
+        visitDateDataBox.grid(row=11, column=2, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        logVisitButton = Button(self, command=self.logVisit, text="Log Visit", background='#4286f4')
+        logVisitButton.grid(row=12, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def logVisit(self):
         pass
 
     def back(self):
