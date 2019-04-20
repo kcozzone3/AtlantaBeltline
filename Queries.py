@@ -619,4 +619,71 @@ class CreateTransit:
                 self.connection.commit()
 
 
+"""Screen 38"""
+class visitorVisitHistory:
+    """(38) VISTOR VISIT HISTORY"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, username):
+        """Given a username, return a list of sites and visit history"""
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"select distinct SiteName from (select v.VisUsername, v.SiteName, v.EventName, v.Date, e.Price from VisitEvent as v " \
+                           f"join Event as e where v.SiteName = e.SiteName and v.EventName=e.EventName and v.StartDate = e.StartDate and VisUsername = ' {username}' " \
+                           f"union all select VisUsername, Sitename, ' ' as EventName, Date, 0 as Price from visitSite where VisUsername = '{username}') as siteTable;")
+            sites = cursor.fetchall()
+            sites = [i['SiteName']for i in sites]
+
+            cursor.execute(f"select v.Date, v.EventName, v.SiteName, e.Price from VisitEvent as v join Event as e "\
+                            f"where v.SiteName = e.SiteName and v.EventName=e.EventName and v.StartDate = e.StartDate and VisUsername = 'mary.smith' "\
+                            f"union all select Date, ' ' as EventName, Sitename, 0 as Price from visitSite where VisUsername = 'mary.smith' order by Date;")
+            history = cursor.fetchall()
+
+            if history:
+                for i in history:
+                    for key in i:
+                        i[key] = str(i[key])
+                history = {i+1: history[i] for i in range(len(history))}
+            else:
+                history = {}
+
+        return sites, history
+
+    def filter(self, username, event=None, site=None, startDate=None, endDate=None, sort='Date'):
+        """Given username or other filter requirements, return a list represents visit history"""
+        query = f"select *  from (select v.VisUsername, v.SiteName, v.EventName, v.Date, e.Price from VisitEvent as v join Event as e "\
+                f"where v.SiteName = e.SiteName and v.EventName=e.EventName and v.StartDate = e.StartDate "\
+                f"union all select VisUsername, Sitename, ' ' as EventName, Date, 0 as Price from visitSite) as fullTable "\
+                f"where VisUsername = '{username}' "
+        
+        if startDate and endDate:
+            query += f"and Date >= '{startDate}' and Date <= '{endDate}' "
+        elif startDate:
+            query += f"and Date >= '{startDate}' "
+        elif endDate:
+            query += f"and Date <= '{endDate}' "
+
+        if site:
+            query += f"and SiteName = '{site}' "
+
+        if event:
+            query += f"and EventName = '{event}' "
+
+        # or order by EventName, SiteName, Price
+        query += f"ORDER BY '{sort}';"
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(query)
+            history = cursor.fetchall()
+
+        if history:
+            for i in history:
+                for key in i:
+                    i[key] = str(i[key])
+            history = {i+1: history[i] for i in range(len(history))}
+        else:
+            history = {}
+
+        return history
+
 
