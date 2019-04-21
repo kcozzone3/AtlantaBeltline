@@ -3,9 +3,9 @@ from datetime import datetime
 from pprint import pprint
 
 """
- __      ___                   
- \ \    / (_)                  
-  \ \  / / _  _____      _____ 
+ __      ___
+ \ \    / (_)
+  \ \  / / _  _____      _____
    \ \/ / | |/ _ \ \ /\ / / __|
     \  /  | |  __/\ V  V /\__ \
      \/   |_|\___| \_/\_/ |___/
@@ -16,17 +16,17 @@ Some views that will make later queries easier. Put these at the bottom of build
 """
 This looks like a mess, admittedly. And there's probably a better way to do it.
 This view (transit_connect) basically holds all of the transits that a user may take.
-It joins the transit table and connect table, and then joins to a temporary table that 
-calculates the number of connected sites (which is necessary according to the PDF). 
+It joins the transit table and connect table, and then joins to a temporary table that
+calculates the number of connected sites (which is necessary according to the PDF).
 
-Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to 
+Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to
 display each column.
 
 CREATE VIEW transit_connect AS
 SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
-    FROM transit AS T JOIN connect AS C 
-                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
-                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
+    FROM transit AS T JOIN connect AS C
+                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route)
+                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
 
 CREATE VIEW emp_profile AS
@@ -44,14 +44,14 @@ FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername 
 """
 
 """
-  _    _                 ______                _   _                   _ _ _         
- | |  | |               |  ____|              | | (_)                 | (_) |        
- | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  _    _                 ______                _   _                   _ _ _
+ | |  | |               |  ____|              | | (_)                 | (_) |
+ | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  | |  | / __|/ _ \ '__| |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |__| \__ \  __/ |    | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
   \____/|___/\___|_|    |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                                                                                 __/ |
-                                                                               |___/ 
+                                                                               |___/
 """ """SCREENS 15-16"""
 
 
@@ -206,14 +206,14 @@ class TransitHistory:
 
 
 """
-  ______                 _                         ______                _   _                   _ _ _         
- |  ____|               | |                       |  ____|              | | (_)                 | (_) |        
- | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  ______                 _                         ______                _   _                   _ _ _
+ |  ____|               | |                       |  ____|              | | (_)                 | (_) |
+ | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  |  __| | '_ ` _ \| '_ \| |/ _ \| | | |/ _ \/ _ \ |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |____| | | | | | |_) | | (_) | |_| |  __/  __/ | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
  |______|_| |_| |_| .__/|_|\___/ \__, |\___|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                   | |             __/ |                                                                   __/ |
-                  |_|            |___/                                                                   |___/ 
+                  |_|            |___/                                                                   |___/
 """
 
 
@@ -726,25 +726,25 @@ class EditEvent:
             cur_staff = [d['StaffName'] for d in cursor.fetchall()]
 
             cursor.execute(f"""
-                            SELECT Distinct(CONCAT(FirstName, ' ', Lastname, ' (', StaffUsername, ')')) AS StaffName FROM assignto JOIN user ON StaffUsername = Username 
-                            WHERE StaffUsername NOT IN (SELECT StaffUsername from assignto NATURAL JOIN event WHERE SiteName = '{sitename}' AND EventName = '{eventname}' AND StartDate = '{startdate}') 
-                            AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto WHERE StartDate BETWEEN '{startdate}' AND '{enddate}')) 
+                            SELECT Distinct(CONCAT(FirstName, ' ', Lastname, ' (', StaffUsername, ')')) AS StaffName FROM assignto JOIN user ON StaffUsername = Username
+                            WHERE StaffUsername NOT IN (SELECT StaffUsername from assignto NATURAL JOIN event WHERE SiteName = '{sitename}' AND EventName = '{eventname}' AND StartDate = '{startdate}')
+                            AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto WHERE StartDate BETWEEN '{startdate}' AND '{enddate}'))
                             AND StaffUsername NOT IN (SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE StaffUsername = ANY(SELECT StaffUsername FROM assignto NATURAL JOIN event WHERE EndDate BETWEEN '{startdate}' AND '{enddate}'));
                             """)
             avail_staff = [d['StaffName'] for d in cursor.fetchall()]
 
             cursor.execute(f"""
                         SELECT gen_date AS Date, IFNULL(DailyVisits, 0) AS DailyVisits, IFNULL(DailyRevenue, 0) AS DailyRevenue FROM
-                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue 
-                        FROM visitevent 
-                        NATURAL JOIN 
-                        event 
-                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc 
-                       
-                        RIGHT JOIN 
-                        dates_view 
+                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue
+                        FROM visitevent
+                        NATURAL JOIN
+                        event
+                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc
+
+                        RIGHT JOIN
+                        dates_view
                         ON gen_date = Date
-                        WHERE gen_date BETWEEN '{startdate}' AND '{enddate}'  
+                        WHERE gen_date BETWEEN '{startdate}' AND '{enddate}'
                         """)
             dailies = cursor.fetchall()
 
@@ -763,15 +763,15 @@ class EditEvent:
             enddate = cursor.fetchone()['EndDate']
 
         query = f"""
-                        SELECT gen_date AS Date, IFNULL(DailyVisits, 0) AS DailyVisits, IFNULL(DailyRevenue, 0) AS DailyRevenue FROM 
-                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue 
-                        FROM visitevent 
-                        NATURAL JOIN 
-                        event 
-                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc 
-                       
-                        RIGHT JOIN 
-                        dates_view 
+                        SELECT gen_date AS Date, IFNULL(DailyVisits, 0) AS DailyVisits, IFNULL(DailyRevenue, 0) AS DailyRevenue FROM
+                        (SELECT Date, COUNT(VisUsername) AS DailyVisits, COUNT(VisUsername) * Price AS DailyRevenue
+                        FROM visitevent
+                        NATURAL JOIN
+                        event
+                        WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}' GROUP BY Date) AS calc
+
+                        RIGHT JOIN
+                        dates_view
                         ON gen_date = Date
                         WHERE gen_date BETWEEN '{startdate}' AND '{enddate} '
                 """
@@ -919,15 +919,15 @@ class SiteReport:
         with self.connection.cursor() as cursor:
             cursor.execute(
 f"""
-SELECT Date AS Date, IFNULL(EventCount, 0) AS EventCount, IFNULL(StaffCount, 0) AS StaffCount, IFNULL(TotalVisits, 0) AS TotalVisits, IFNULL(TotalRevenue, 0) AS TotalRevenue from 
-(SELECT gen_date AS Date, Count(*) AS EventCount FROM event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS EC 
-NATURAL JOIN 
-(SELECT gen_date AS Date, Count(*) AS StaffCount FROM assignto NATURAL JOIN event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS SC 
-NATURAL JOIN 
-(SELECT gen_date AS Date, IFNULL(ETotal, 0) + IFNULL(STotal, 0) AS TotalVisits FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS ETotal FROM visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS E ON gen_date = Date 
-NATURAL LEFT JOIN (SELECT Date, COUNT(VisUsername) AS STotal FROM visitsite WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS S) AS TV 
-NATURAL LEFT JOIN 
-(SELECT Date, Q.Total AS TotalRevenue FROM (SELECT Date, Price * Count(VisUsername) AS Total FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS Q) AS TR WHERE 1=1 
+SELECT Date AS Date, IFNULL(EventCount, 0) AS EventCount, IFNULL(StaffCount, 0) AS StaffCount, IFNULL(TotalVisits, 0) AS TotalVisits, IFNULL(TotalRevenue, 0) AS TotalRevenue from
+(SELECT gen_date AS Date, Count(*) AS EventCount FROM event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS EC
+NATURAL JOIN
+(SELECT gen_date AS Date, Count(*) AS StaffCount FROM assignto NATURAL JOIN event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS SC
+NATURAL JOIN
+(SELECT gen_date AS Date, IFNULL(ETotal, 0) + IFNULL(STotal, 0) AS TotalVisits FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS ETotal FROM visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS E ON gen_date = Date
+NATURAL LEFT JOIN (SELECT Date, COUNT(VisUsername) AS STotal FROM visitsite WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS S) AS TV
+NATURAL LEFT JOIN
+(SELECT Date, Q.Total AS TotalRevenue FROM (SELECT Date, Price * Count(VisUsername) AS Total FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '1111-11-11' AND '1111-11-11' AND SiteName = 'Lizard' GROUP BY Date) AS Q) AS TR WHERE 1=1
 """)
             dailies = cursor.fetchall()
             for i in dailies:
@@ -945,18 +945,18 @@ NATURAL LEFT JOIN
                 return self.load()
 
         query = f"""
-SELECT gen_date AS Date, EventCount, StaffCount, TotalVisits, TotalRevenue from 
+SELECT gen_date AS Date, EventCount, StaffCount, TotalVisits, TotalRevenue from
 (SELECT gen_date, IFNULL(StaffCount, 0) AS StaffCount FROM (SELECT gen_date FROM dates_view WHERE gen_date  BETWEEN '{startdate}' AND '{enddate}') AS D2 LEFT JOIN (SELECT gen_date AS Date, Count(*) AS StaffCount FROM assignto NATURAL JOIN event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS SC1 ON Date = gen_date) AS SC
 NATURAL JOIN
 (SELECT gen_date, IFNULL(EventCount, 0) AS EventCount FROM (SELECT gen_date FROM dates_view WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS D1 LEFT JOIN (SELECT gen_date AS Date, Count(*) AS EventCount FROM event RIGHT JOIN dates_view ON gen_date BETWEEN StartDate AND EndDate WHERE StartDate BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS EC1 On Date = gen_date) AS EC
 NATURAL JOIN
-(SELECT gen_date, ETot + STot AS TotalVisits FROM 
+(SELECT gen_date, ETot + STot AS TotalVisits FROM
 	(SELECT gen_date, IFNULL(ETotal, 0) AS ETot FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS ETotal FROM visitevent WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS E ON gen_date = Date WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS E
 	NATURAL JOIN
 	(SELECT gen_date, IFNULL(STotal, 0) AS STot FROM dates_view LEFT JOIN (SELECT Date, COUNT(VisUsername) AS STotal FROM visitsite WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS S ON gen_date = Date WHERE gen_date BETWEEN '{startdate}' AND '{enddate}') AS S) AS VTot
 NATURAL JOIN
-(SELECT gen_date, IFNULL(TotalRevenue, 0) AS TotalRevenue FROM (SELECT gen_date FROM dates_view WHERE gen_date  BETWEEN '{startdate}' AND '{enddate}') AS D4 LEFT JOIN (SELECT Date, Price * Count(VisUsername) AS TotalRevenue FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS TR1 ON Date = gen_date) AS RTot 
-WHERE 1=1 
+(SELECT gen_date, IFNULL(TotalRevenue, 0) AS TotalRevenue FROM (SELECT gen_date FROM dates_view WHERE gen_date  BETWEEN '{startdate}' AND '{enddate}') AS D4 LEFT JOIN (SELECT Date, Price * Count(VisUsername) AS TotalRevenue FROM event NATURAL JOIN visitevent WHERE Date BETWEEN '{startdate}' AND '{enddate}' AND SiteName = '{sitename}' GROUP BY Date) AS TR1 ON Date = gen_date) AS RTot
+WHERE 1=1
 """
         if e1 and e2:
             query += f"AND EventCount BETWEEN {e1} AND {e2} "
@@ -1017,7 +1017,7 @@ class DailyDetail:
                 return {1: {'EventName': '', 'StaffNames': '', 'NumVisits': '', 'Revenue': ''}}
 
         query = f"""
-                SELECT EventName, StaffNames, NumVisits, Revenue FROM(    
+                SELECT EventName, StaffNames, NumVisits, Revenue FROM(
                     (SELECT EventName, IFNULL(NumVisits, 0) AS NumVisits, IFNULL(NumVisits * Price, 0) AS Revenue FROM (SELECT EventName, StartDate, Price FROM event WHERE '2019-10-10' BETWEEN StartDate and EndDate AND SiteName = 'Piedmont Park') A NATURAL LEFT JOIN (SELECT EventName, COUNT(VisUsername) AS NumVisits FROM visitevent WHERE Date = '2019-10-10' AND SiteName = 'Piedmont Park' GROUP BY EventName) B) AS C
                 NATURAL JOIN
                     (SELECT EventName, GROUP_CONCAT(CONCAT(FirstName, ' ', LastName) ORDER BY FirstName ASC) AS StaffNames FROM event NATURAL JOIN assignto JOIN user ON Username = StaffUsername WHERE  '{date}' BETWEEN StartDate AND EndDate AND SiteName = '{sitename}' GROUP BY EventName) AS D)
@@ -1216,6 +1216,58 @@ class visitorEventDetail:
             eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description = event['EventName'], event['SiteName'], event['StartDate'], event['EndDate'], event['Price'], event['TicketsRemaining'], event['Description']
         return eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description
 
+class visitorTransitDetail:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, sitename):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
+                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
+                            "JOIN (SELECT * FROM transit) AS t"
+                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
+                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                            "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
+                            ")")
+            routes = cursor.fetchall()
+
+            for i in routes:
+                for key in i:
+                    i[key] = ""
+
+            routes = {1: events[1]}
+
+            cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
+                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
+                            "JOIN (SELECT * FROM transit) AS t"
+                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
+                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                            "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
+                            ")")
+            transportTypes = [f"{d['TransportType']}" for d in cursor.fetchall()]
+        return routes, transportTypes
+
+    def filter(self, transporttype):
+        query = "SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
+                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
+                            "JOIN (SELECT * FROM transit) AS t"
+                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
+                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                            "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
+                            ")"
+        query += "WHERE TransportType = \'" +transporttype+ "\'"
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            routes = cursor.fetchall()
+
+        for i in routes:
+            for key in i:
+                i[key] = str(i[key])
+        routes = {i+1: routes[i] for i in range(len(routes))}
+
+        return routes
 
 class visitorSiteDetail:
     """(37) Visitor Site Detail"""

@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Dihydrogen_sulfate'
+MYSQL_PASSWORD = ''
 #######################################
 
 
@@ -3991,6 +3991,86 @@ class visitorEventDetail(Toplevel):
         self.master.deiconify()
         self.destroy()
 
+class visitorTransitDetail(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Transit Detail')
+        self.config(background='#ffffff')
+        self.SQL = Queries.visitorTransitDetail(db)
+
+    def display(self, sitename):
+        routes, transportTypes = self.SQL.load(sitename)
+
+        self.siteName = StringVar()
+        self.siteName.set(siteName)
+        self.transportType = StringVar()
+        #self.transportTypes = transportTypes
+        self.transitDate = StringVar()
+        self.routeName = StringVar()
+
+        self.resultTable = TableCanvas(self, editable=True, data=routes,
+                                        read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                        rows=len(routes), thefont=('Helvetica', 10), autoresizecols=1,
+                                        width=150*len(list(routes.values())[0]), height=25*7)
+        self.resultTable.grid(row=1, column=1, rowspan=10, sticky=W + E)
+        self.resultTable.show()
+
+        siteNameLabel = Label(self, text="Site Name", foreground='#000000', background='#ffffff')
+        siteNameLabel.grid(row=11, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        siteNameDataLabel = Label(self, text=self.siteName.get(), foreground='#000000', background='#ffffff')
+        siteNameDataLabel.grid(row=11, column=2, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        transportTypeLabel = Label(self, text="Transport Type", foreground='#000000', background='#ffffff')
+        transportTypeLabel.grid(row=12, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        transportTypeDropdown = OptionMenu(self, self.transportType, *transportTypes + ['Any'])
+        transportTypeDropdown.grid(row=12, column=2, padx=(2, 5), pady=(0, 4), sticky=W)
+
+        filterButton = Button(self,command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=12, column=3, padx=(2, 2), pady=(2, 2), sticky=W)
+
+        transitDateLabel = Label(self, text="Transit Date", foreground='#000000', background='#ffffff')
+        transitDateLabel.grid(row=13, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        transitDateBox = Entry(self, textvariable=self.transitDate, width=20)
+        transitDateBox.grid(row=13, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+
+        logVisitButton = Button(self, command=self.logVisit, text="Log Visit", background='#4286f4')
+        logVisitButton.grid(row=13, column=3, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=14, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
+    def logVisit(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        routeName = row['Route']
+        cursor.execute("Select Route From take WHERE Username = \'" +identifier+ "\'' AND Date = \'" +self.transitDate.get()+ "\'' AND Route = \'" +routeName+ "\'' AND TransportType = \'" +self.transportType.get()+ "\'")
+        route = cursor.fetchone()
+        if(route is not None):
+            messagebox.showwarning("Already Logged",
+                           "There is already a visit logged for you at this site and date.")
+        else:
+            cursor.execute("INSERT into take values (%s, %s, %s, %s)",
+                      (identifier, self.transportType.get(), route, self.transitDate.get()))
+            messagebox.showinfo("Success",
+                           "Your visit has been logged.")
+
+    def filter(self):
+        # event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = self.eventName.get(), self.siteName.get(), self.descriptionKeyword.get(), self.startDate.get(), self.endDate.get(), self.TVR1.get(), self.TVR2.get(), self.TPR1.get(), self.TPR2.get(), self.includeVisited.get(), self.includeSoldOut.get()
+
+        # conv = {'': None, 'Any': None}
+        # event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = conv.get(event, event), conv.get(site, site), conv.get(keyword, keyword), conv.get(startDate, startDate), conv.get(endDate, endDate), conv.get(TVR1, TVR1), conv.get(TVR2, TVR2), conv.get(TPR1, TPR1), conv.get(TPR2, TPR2), conv.get(includeVisited, includeVisited), conv.get(includeSoldOut, includeSoldOut)
+
+        # if sort is None:
+        #     sort = 'EventName'
+        routes = self.SQL.filter(self.transportType.get())
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(routes)
+        self.resultTable.redraw()
+
+    def back(self):
+        self.master.deiconify()
+        self.destroy()
 
 class visitorSiteDetail(Toplevel):
     def __init__(self, master):
