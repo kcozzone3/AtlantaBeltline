@@ -92,7 +92,6 @@ CREATE TABLE Transit
       	Price decimal(9,2) NOT NULL,
 
       	PRIMARY KEY (TransportType, Route)
-
       	);
      	 
 CREATE TABLE Site
@@ -115,7 +114,7 @@ CREATE TABLE Event
       	StartDate date NOT NULL,
       	EndDate date NOT NULL,
       	Price decimal(9,2) NOT NULL,
-     	Capacity int,
+     	Capacity int NOT NULL,
       	MinStaffReq int NOT NULL,
      	Description varchar(800) NOT NULL,
 
@@ -134,11 +133,11 @@ CREATE TABLE Take
      	 
       	PRIMARY KEY (Username, TransportType, Route, Date),
       	FOREIGN KEY (Username) REFERENCES User(Username)
-	ON UPDATE CASCADE
-	ON DELETE CASCADE,
+		ON UPDATE CASCADE
+		ON DELETE CASCADE,
       	FOREIGN KEY (TransportType, Route) REFERENCES Transit(TransportType, Route)
-	ON UPDATE CASCADE
-	ON DELETE RESTRICT
+		ON UPDATE CASCADE
+		ON DELETE CASCADE
       	);
      	 
 
@@ -197,7 +196,7 @@ CREATE TABLE Connect
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
       	FOREIGN KEY (TransportType, Route) REFERENCES Transit(TransportType, Route)
-	ON DELETE RESTRICT
+	ON DELETE CASCADE
 	ON UPDATE CASCADE
 
       	);
@@ -221,3 +220,30 @@ SELECT Username, CASE WHEN EXISTS(SELECT * FROM manager WHERE ManUsername = u.Us
        END AS UserType
 FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername = u.Username);
 
+CREATE VIEW manage_event AS
+SELECT event.EventName, 
+		SiteName,
+        StartDate,
+        EndDate,
+		ManUsername,
+		StaffCount,
+        MinStaffReq,
+        DATEDIFF(EndDate, StartDate) + 1 AS Duration, 
+        Visits, 
+        Price,
+        Capacity,
+        Price * Visits AS Revenue,
+        Description
+FROM event NATURAL JOIN (SELECT COUNT(DISTINCT(StaffUsername)) AS StaffCount, SiteName, EventName, StartDate FROM assignto NATURAL RIGHT JOIN event GROUP BY SiteName, EventName, StartDate) as stf
+		   NATURAL JOIN (SELECT COUNT(VisUsername) AS Visits, EventName, SiteName, StartDate FROM visitevent NATURAL RIGHT JOIN event GROUP BY EventName, SiteName, StartDate) as vst
+           JOIN site ON event.SiteName = site.Name
+GROUP BY EventName, SiteName, StartDate;
+
+CREATE VIEW dates_view AS 
+select * from 
+(select adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) gen_date from
+ (select 0 t0 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t0,
+ (select 0 t1 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t1,
+ (select 0 t2 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t2,
+ (select 0 t3 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t3,
+ (select 0 t4 union select 1 union select 2 union select 3 union select 4 union select 5 union select 6 union select 7 union select 8 union select 9) t4) v
