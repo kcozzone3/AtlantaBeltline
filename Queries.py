@@ -675,7 +675,7 @@ class VisitorExploreSite:
 
         if openEveryday != '--ALL--':
             query += f"and OpenEveryday = '{openEveryday}' "
-        elif openEveryday == '--ALL--'
+        elif openEveryday == '--ALL--':
             query += f"and OpenEveryday = 0 and OpenEveryday = 1 "
 
         if startDate:
