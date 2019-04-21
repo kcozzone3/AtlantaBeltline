@@ -3256,7 +3256,7 @@ class visitorSiteDetail(Toplevel):
         logVisitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        backButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def logVisit(self):
         cursor.execute("SELECT SiteName FROM visitsite WHERE SiteName = \'" +self.siteName.get()+ "\'" +" AND VisUsername = \'" +identifier+ "\'"+ " AND Date = \'" +self.visitDate.get()+ "\'")
