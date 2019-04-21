@@ -3111,6 +3111,9 @@ class visitorEventDetail(Toplevel):
         if((self.visitDate.get() < self.startDate.get()) or (self.visitDate.get() > self.endDate.get())):
             messagebox.showwarning("Invalid Date",
                                "Date must be within the time of the event.")
+        elif(self.ticketsRemaining.get() == "0"):
+            messagebox.showwarning("No Tickets Remaining",
+                               "There are no tickets remaining for this event.")
         else:
             cursor.execute("SELECT EventName FROM visitevent WHERE EventName = \'" +self.eventName.get()+ "\' AND SiteName = \'" +self.siteName.get()+ "\' AND StartDate = \'" +self.startDate.get()+ "\' AND Date = \'" +self.visitDate.get()+ "\' AND visUsername = \'" +identifier+ "\'")
             event = cursor.fetchone()
