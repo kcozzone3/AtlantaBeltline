@@ -717,8 +717,82 @@ class VisitorExploreSite:
         return siteDetails
 
 
+"""Screen 36"""
+class VisitorTransitDetail:
+    """(36) VISITOR TRANSIT DETAIL"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, siteName):
+        query = f"SELECT Route, TransportType, Price, NumSites as 'ConnectedSites' from (SELECT "\
+        f"T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites FROM transit AS "\
+        f"T JOIN connect AS C ON (T.TransportType, T.Route) = (C.TransportType, C.Route) JOIN (SELECT"\
+        f" TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS "\
+        f"tmp ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route)) as MyTable WHERE SiteName "\
+        f"= '{siteName}' GROUP BY TransportType, Route ORDER BY Route;"
+            
+        with self.connect.cursor() as cursor:
+            cursor.execute(query)
+            transitDetails = cursor.fetchall()
+
+        if transitDetails:
+            for i in transitDetails:
+                for key in i:
+                    i[key] = str(i[key])
+            transitDetails = {i+1: transitDetails[i] for i in range(len(transitDetails))}
+        else:
+            transitDetails = {}
+
+        return transitDetails
+
+    def filter(self, siteName, TransportType='--ALL--', sort="Route"):
+        """Given siteName, transportType, sort, return a list of tuples that represent the possible transits."""
+        query = f"SELECT Route, TransportType, Price, NumSites as 'ConnectedSites' from (SELECT "\
+        f"T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites FROM transit AS "\
+        f"T JOIN connect AS C ON (T.TransportType, T.Route) = (C.TransportType, C.Route) JOIN (SELECT"\
+        f" TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS "\
+        f"tmp ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route)) as MyTable WHERE SiteName "\
+        f"= '{siteName}' "
+
+        if TransportType != '--ALL--':
+            query += f"and TransportType  = '{TransportType}' "
+
+        query += f"GROUP BY TransportType, Route ORDER BY {sort};"
+
+        with self.connect.cursor() as cursor:
+            cursor.execute(query)
+            transitDetails = cursor.fetchall()
+
+        if transitDetails:
+            for i in transitDetails:
+                for key in i:
+                    i[key] = str(i[key])
+            transitDetails = {i+1: transitDetails[i] for i in range(len(transitDetails))}
+        else:
+            transitDetails = {}
+
+        return transitDetails
+
+    def submit(self, username, route, TransportType, date):
+        """Given a route, transport_type, and date, submits an entry into the database. Returns 0 for a successful
+        submission, -1 if the User attempts to take the same transport on the same day twice, and -2 if the inputted
+        date is incorrect. """
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM take WHERE Username = '{username}' AND Date = '{date}' AND Route = '{route}' "
+                           f"AND TransportType = '{TransportType}'")
+            if len(cursor.fetchall()) >= 1:
+                # Create a window/popup alerting the user they cannot take the same transit twice
+                return -1
+
+            else:
+                cursor.execute(f"INSERT INTO take VALUES ('{username}', '{TransportType}', '{route}', '{date}')")
+                self.connection.commit()
+
+        return 0
+
+
 """Screen 38"""
-class visitorVisitHistory:
+class VisitorVisitHistory:
     """(38) VISTOR VISIT HISTORY"""
     def __init__(self, connection):
         self.connection = connection
