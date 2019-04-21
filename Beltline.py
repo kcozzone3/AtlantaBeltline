@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = ''
+MYSQL_PASSWORD = 'Dihydrogen_sulfate'
 #######################################
 
 
@@ -40,6 +40,9 @@ class Login(Toplevel):
     def display(self):
         self.loginEmail = StringVar()
         self.loginPassword = StringVar()
+
+        self.loginEmail.set('s1@beltline.com')
+        self.loginPassword.set('staff1234')
 
         # create a label (text) on the login window with the text of login with certain other properties
         loginLabel = Label(self, text="Login", font="Helvetica", foreground='#000000', background='#ffffff')
@@ -1227,7 +1230,6 @@ class UserFunctionality(Toplevel):
         TransitHistoryWindow.display()
 
 
-
 class VisitorFunctionality(Toplevel):
     def __init__(self, master):
         Toplevel.__init__(self)
@@ -1275,16 +1277,16 @@ class VisitorFunctionality(Toplevel):
 
     def onVisitorFunctionalityExploreEventButtonClicked(self):
         exploreEventWindow = visitorExploreEvent(self)
-        self.withdraw()
         exploreEventWindow.display()
+        self.withdraw()
+
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
-        exploreSiteWindow = visitorExploreSite(self)
-        self.withdraw()
-        exploreSiteWindow.display()
+        pass
+        #TODO
 
     def onVisitorFunctionalityVisitHistoryButtonButtonClicked(self):
-        visitHistoryWindow = visitorVisitHistory(self)
+        visitHistoryWindow = VisitHistory(self)
         self.withdraw()
         visitHistoryWindow.display()
 
@@ -1432,15 +1434,18 @@ class AdministratorVisitorFunctionality(Toplevel):
         manageSiteWindow.display()
         self.withdraw()
 
-
     def onAdminVisitorExploreSiteButtonClicked(self):
         pass
 
     def onAdminVisitorExploreEventButtonClicked(self):
-        pass
+        exploreEventWindow = visitorExploreEvent(self)
+        exploreEventWindow.display()
+        self.withdraw()
 
     def onAdminVisitorViewVisitHistoryButtonClicked(self):
-        pass
+        visitHistoryWindow = VisitHistory(self)
+        self.withdraw()
+        visitHistoryWindow.display()
 
     def onAdminVisitorViewTransitHistoryButtonClicked(self):
         transitHistoryWindow = TransitHistory(self)
@@ -1453,7 +1458,7 @@ class AdministratorVisitorFunctionality(Toplevel):
 
 
 class ManagerVisitorFunctionality(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Functionality -- Manager-Visitor')
@@ -1499,19 +1504,27 @@ class ManagerVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onManagerVisitorManageEventButtonClicked(self):
-        pass
+        manageEventWindow = ManageEvent(self)
+        manageEventWindow.display()
+        self.withdraw()
 
     def onManagerVisitorViewStaffButtonClicked(self):
-        pass
+        viewStaffWindow = ManageStaff(self)
+        viewStaffWindow.display()
+        self.withdraw()
 
     def onManagerVisitorViewSiteReportButtonClicked(self):
-        pass
+        siteReportWindow = SiteReport(self)
+        siteReportWindow.display()
+        self.withdraw()
 
     def onManagerVisitorExploreSiteButtonClicked(self):
         pass
 
     def onManagerVisitorExploreEventButtonClicked(self):
-        pass
+        exploreEventWindow = visitorExploreEvent(self)
+        exploreEventWindow.display()
+        self.withdraw()
 
     def onManagerVisitorTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
@@ -1524,15 +1537,16 @@ class ManagerVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onManagerVisitorViewVisitHistoryButtonClicked(self):
-        pass
-
+        visitHistoryWindow = VisitHistory(self)
+        self.withdraw()
+        visitHistoryWindow.display()
     def onManagerVisitorFunctionalityBackButtonClicked(self):
         self.master.deiconify()
         self.destroy()
 
 
 class StaffVisitorFunctionality(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Functionality -- Staff-Visitor')
@@ -1567,13 +1581,19 @@ class StaffVisitorFunctionality(Toplevel):
         staffVisitorBackButton.grid(row=5, column=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def onStaffVisitorManageProfileButtonClicked(self):
-        pass
+        profileWindow = ManageProfile(self)
+        profileWindow.display()
+        self.withdraw()
 
     def onStaffVisitorExploreEventButtonClicked(self):
-        pass
+        exploreEventWindow = visitorExploreEvent(self)
+        exploreEventWindow.display()
+        self.withdraw()
 
     def onStaffVisitorViewScheduleButtonClicked(self):
-        pass
+        viewScheduleWindow = StaffViewSchedule(self)
+        viewScheduleWindow.display()
+        self.withdraw()
 
     def onStaffVisitorExploreSiteButtonClicked(self):
         pass
@@ -1584,7 +1604,9 @@ class StaffVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onStaffVisitorViewVisitHistoryButtonClicked(self):
-        pass
+        visitHistoryWindow = VisitHistory(self)
+        self.withdraw()
+        visitHistoryWindow.display()
 
     def onStaffVisitorViewTransitHistoryButtonClicked(self):
         transitHistoryWindow = TransitHistory(self)
@@ -1597,7 +1619,7 @@ class StaffVisitorFunctionality(Toplevel):
 
 
 class ManagerFunctionality(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Functionality -- Manager-Only')
@@ -1634,13 +1656,19 @@ class ManagerFunctionality(Toplevel):
         self.withdraw()
 
     def onManagerManageEventButtonClicked(self):
-        pass
+        manageEventWindow = ManageEvent(self)
+        manageEventWindow.display()
+        self.withdraw()
 
     def onManagerViewStaffButtonClicked(self):
-        pass
+        viewStaffWindow = ManageStaff(self)
+        viewStaffWindow.display()
+        self.withdraw()
 
     def onManagerViewSiteReportButtonClicked(self):
-        pass
+        siteReportWindow = SiteReport(self)
+        siteReportWindow.display()
+        self.withdraw()
 
     def onManagerTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
@@ -1689,7 +1717,9 @@ class StaffFunctionality(Toplevel):
         profileWindow.display()
 
     def onStaffViewScheduleButtonClicked(self):
-        pass
+        viewScheduleWindow = StaffViewSchedule(self)
+        viewScheduleWindow.display()
+        self.withdraw()
 
     def onStaffTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
@@ -1704,7 +1734,6 @@ class StaffFunctionality(Toplevel):
     def onStaffFunctionalityBackButtonClicked(self):
         self.master.deiconify()
         self.destroy()
-
 
 
 class TakeTransit(Toplevel):
@@ -1728,7 +1757,6 @@ class TakeTransit(Toplevel):
                                        read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
                                        rows=len(transits), thefont=('Helvetica', 10), autoresizecols=1,
                                        width=150*len(list(transits.values())[0]), height=25*7)
-        #self.resultTable.grid(row=0, column=0, rowspan=10, sticky=W + E)
         self.resultTable.show()
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
@@ -1773,8 +1801,6 @@ class TakeTransit(Toplevel):
 
         logButton = Button(self, command=self.take, text="Log Transit", background='#4286f4')
         logButton.grid(row=9, column=3, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
-
-
 
     def filter(self, sort=None):
         if sort and self.resultTable.model.getData()[1]['Route'] == '':
@@ -2171,7 +2197,7 @@ class ManageUser(Toplevel):
                                             'row number to select which transit you are taking.')
             return
 
-        self.SQL.submit(user_name)
+        self.SQL.submit(user_name, 'Approved')
         self.resultTable.model.setValueAt('Approved', self.resultTable.getSelectedRow(), 3)
         self.resultTable.redraw()
         messagebox.showwarning('Success', 'Status successfully updated.')
@@ -2188,7 +2214,7 @@ class ManageUser(Toplevel):
             messagebox.showwarning('Error', 'Cannot decline an already approved user. Let the man be, pesky admin.')
             return
 
-        self.SQL.submit(user_name)
+        self.SQL.submit(user_name, 'Declined')
         self.resultTable.model.setValueAt('Declined', self.resultTable.getSelectedRow(), 3)
         self.resultTable.redraw()
 
@@ -2496,7 +2522,7 @@ class ManageTransit(Toplevel):
     def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
-        self.title('Manage Site')
+        self.title('Manage Transit')
         self.config(background='#ffffff')
         self.SQL = Queries.ManageTransit(db)
 
@@ -2512,7 +2538,6 @@ class ManageTransit(Toplevel):
                                        read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
                                        rows=len(transits), thefont=('Helvetica', 10), autoresizecols=1,
                                        width=150*len(list(transits.values())[0]), height=25*7)
-        #self.resultTable.grid(row=0, column=0, rowspan=10, sticky=W + E)
         self.resultTable.show()
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
@@ -2599,24 +2624,23 @@ class ManageTransit(Toplevel):
         self.withdraw()
 
     def create(self):
-        createSiteWindow = CreateSite(self)
-        createSiteWindow.display()
+        createTransitWindow = CreateTransit(self)
+        createTransitWindow.display()
         self.withdraw()
 
     def delete(self):
         row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
-        sitename = row['SiteName']
+        ttype, route = row['TransportType'], row['Route']
 
-        if sitename == '':
-            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+        if route == '':
+            messagebox.showwarning('Error', 'No transit selected. Make sure to click on the non-empty '
                                             'row number to select which transit you are taking.')
             return
 
-
-        self.SQL.delete(sitename)
+        self.SQL.delete(ttype, route)
         self.resultTable.deleteRow()
         self.resultTable.redrawTable()
-        messagebox.showwarning('Success', 'Site successfully deleted.')
+        messagebox.showwarning('Success', 'Transit successfully deleted.')
 
 
 class EditTransit(Toplevel):
@@ -2689,7 +2713,7 @@ class EditTransit(Toplevel):
             return
 
         if self.SQL.submit(self.ttype, route, price, sites, self.original_route) == -1:
-            messagebox.showwarning('Error', 'Duplicate entry for row/col')
+            messagebox.showwarning('Error', 'That Route/Transit combination already exist')
             return
 
         else:
@@ -2710,46 +2734,403 @@ class CreateTransit(Toplevel):
     def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
-        self.title('Create Site')
+        self.title('Create Transit')
         self.config(background='#ffffff')
-        self.SQL = Queries.CreateSite(db)
+        self.SQL = Queries.CreateTransit(db)
 
     def display(self):
-        managers = self.SQL.load()
-
-        self.sitename, self.zipcode, self.address, self.managers, self.everyday = StringVar(), StringVar(), StringVar(), StringVar(), BooleanVar()
+        sites = self.SQL.load()
+        self.ttype, self.route, self.price, self.connected_sites = StringVar(), StringVar(), StringVar(), StringVar()
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
         backButton.grid(row=10, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
-        titleLabel = Label(self, text='Edit Site', font='Helvetica 15', foreground='#000000', background='#ffffff')
-        titleLabel.grid(row=0, column=3, padx=(4,4), pady=(2,2), sticky=W+E)
+        titleLabel = Label(self, text='Create Transit', font='Helvetica 15', foreground='#000000', background='#ffffff')
+        titleLabel.grid(row=0, column=0, padx=(4,4), pady=(2,2), sticky=W+E)
 
-        sitenameLabel = Label(self, text="Name", font="Helvetica", foreground='#000000', background='#ffffff')
-        sitenameLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=E)
-        sitenameBox = Entry(self, textvariable=self.sitename, width=50)
-        sitenameBox.grid(row=1, column=2, padx=(4, 4), pady=(0, 4), sticky=W)
+        ttypeLabel = Label(self, text=f"Transport Type", font="Helvetica", foreground='#000000', background='#ffffff')
+        ttypeLabel.grid(row=1, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        utypeDropdown = OptionMenu(self, self.ttype, *['MARTA', 'Bus', 'Bike'])
+        utypeDropdown.grid(row=1, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
 
-        zipLabel = Label(self, text="Zip Code", font="Helvetica", foreground='#000000', background='#ffffff')
-        zipLabel.grid(row=1, column=4, padx=(4, 4), pady=(2, 2), sticky=E)
-        zipBox = Entry(self, textvariable=self.zipcode, width=7)
-        zipBox.grid(row=1, column=5, padx=(4, 4), pady=(0, 4))
+        routeLabel = Label(self, text="Route", font="Helvetica", foreground='#000000', background='#ffffff')
+        routeLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        routeBox = Entry(self, textvariable=self.route, width=7)
+        routeBox.grid(row=2, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
 
-        addressLabel = Label(self, text="Address", font="Helvetica", foreground='#000000', background='#ffffff')
-        addressLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=E)
-        addressBox = Entry(self, textvariable=self.address, width=50)
-        addressBox.grid(row=2, column=2, padx=(4, 4), pady=(0, 4))
+        priceLabel = Label(self, text="Price", font="Helvetica", foreground='#000000', background='#ffffff')
+        priceLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        priceBox = Entry(self, textvariable=self.price, width=15)
+        priceBox.grid(row=3, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
 
-        manLabel = Label(self, text="Manager", font="Helvetica", foreground='#000000', background='#ffffff')
-        manLabel.grid(row=2, column=4, padx=(4, 4), pady=(2, 2), sticky=E)
-        manDropdown = OptionMenu(self, self.managers, *managers)
-        manDropdown.grid(row=2, column=5, padx=(2, 5), pady=(0, 4), sticky=W)
+        self.sitesList = Listbox(self, selectmode=MULTIPLE)  # Multiple means you may select multiple sites.
+        self.sitesList.grid(row=4, column=0, padx=(4,4), pady=(0,4), columnspan=2, sticky=W+E)
 
-        everydayCheckButton = Checkbutton(self, text='Open Everyday', variable=self.everyday)
-        everydayCheckButton.grid(row=3, column=3, padx=(4,4), pady=(4,4))
+        for i, site in enumerate(sites):
+            self.sitesList.insert(i, site)
+
+        createButton = Button(self, command=self.submit, text="Create", background='#4286f4')
+        createButton.grid(row=10, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+
+    def submit(self):
+        ttype, route, price, sites = self.ttype.get(), self.route.get(), self.price.get(), self.sitesList.curselection()
+        sites = [self.sitesList.get(i) for i in sites]
+
+        if price == '':
+            messagebox.showwarning('Error', 'You must have a price.')
+            return
+        elif route == '':
+            messagebox.showwarning('Error', 'You must have a route.')
+            return
+        elif len(sites) < 2:
+            messagebox.showwarning('Error', 'Each transit must be connected to at least two sites.')
+            return
+        try:
+            price = float(price)
+            if price > 9999999.99 or price < 0:
+                messagebox.showwarning('Error', 'Price is too long, negative, or has too many decimals. '
+                                                'It must be a 7 digit float, with two extra decimal places.')
+                return
+        except:
+            messagebox.showwarning('Error', 'Price must be a float.')
+            return
+
+        if self.SQL.create(ttype, route, price, sites) == -1:
+            messagebox.showwarning('Error', 'That transit type/route combination already exists.')
+            return
+
+        else:
+            messagebox.showwarning('Success', 'Transit successfully created')
+            return
+
+
+
+    def back(self):
+        for widget in self.master.winfo_children():
+            widget.destroy()  # Refreshes by removing all widgets and then reloading them.
+        self.master.display()
+        self.master.deiconify()
+        self.destroy()
+
+
+class ManageEvent(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Manage Event')
+        self.config(background='#ffffff')
+        self.SQL = Queries.ManageEvent(db)
+
+    def display(self):
+        events = self.SQL.load()
+
+        self.name, self.keyword, self.d1, self.d2, self.dur1 = StringVar(), StringVar(), StringVar(), StringVar(), StringVar()
+        self.dur2, self.vis1, self.vis2, self.rev1, self.rev2 = StringVar(), StringVar(), StringVar(),  StringVar(), StringVar()
+
+        self.resultTable = TableCanvas(self, editable=True, data=events,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(events), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(events.values())[0]), height=25*7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=20, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        nameLabel = Label(self, text="Name", font="Helvetica", foreground='#000000', background='#ffffff')
+        nameLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        nameBox = Entry(self, textvariable=self.name, width=10)
+        nameBox.grid(row=2, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        keywordLabel = Label(self, text="Description Keyword", font="Helvetica", foreground='#000000', background='#ffffff')
+        keywordLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2))
+        keywordBox = Entry(self, textvariable=self.keyword, width=10)
+        keywordBox.grid(row=3, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d1Label = Label(self, text="Start Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d1Label.grid(row=4, column=0, padx=(4, 4), pady=(2, 2))
+        d1Box = Entry(self, textvariable=self.d1, width=10)
+        d1Box.grid(row=4, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d2Label = Label(self, text="End Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d2Label.grid(row=5, column=0, padx=(4, 4), pady=(2, 2))
+        d2Box = Entry(self, textvariable=self.d2, width=10)
+        d2Box.grid(row=5, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        durLabel = Label(self, text="Duration Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        durLabel.grid(row=6, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        dur1Box = Entry(self, textvariable=self.dur1,  width=5)
+        dur1Box.grid(row=6, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        dur2Box = Entry(self, textvariable=self.dur2,  width=5)
+        dur2Box.grid(row=6, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        revLabel = Label(self, text="Revenue Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        revLabel.grid(row=7, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        rev1Box = Entry(self, textvariable=self.rev1,  width=5)
+        rev1Box.grid(row=7, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        rev2Box = Entry(self, textvariable=self.rev2,  width=5)
+        rev2Box.grid(row=7, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        visLabel = Label(self, text="Visit Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        visLabel.grid(row=8, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        vis1Box = Entry(self, textvariable=self.vis1, width=5)
+        vis1Box.grid(row=8, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        vis2Box = Entry(self, textvariable=self.vis2, width=5)
+        vis2Box.grid(row=8, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortName = partial(self.filter, 'EventName')
+        sortTtypeButton = Button(self, command=sortName, text="Sort by Name", background='#4286f4')
+        sortTtypeButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortStaff = partial(self.filter, 'StaffCount')
+        sortStaffButton = Button(self, command=sortStaff, text="Sort by Staff Count", background='#4286f4')
+        sortStaffButton.grid(row=11, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortDur = partial(self.filter, 'Duration')
+        sortDurButton = Button(self, command=sortDur, text="Sort by Duration", background='#4286f4')
+        sortDurButton.grid(row=12, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortVisits = partial(self.filter, 'Visits')
+        sortVisitsButton = Button(self, command=sortVisits, text="Sort by Visits", background='#4286f4')
+        sortVisitsButton.grid(row=13, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortRev = partial(self.filter, 'Revenue')
+        sortRevButton = Button(self, command=sortRev, text="Sort by Revenue", background='#4286f4')
+        sortRevButton.grid(row=14, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         createButton = Button(self, command=self.create, text="Create", background='#4286f4')
-        createButton.grid(row=10, column=3, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        createButton.grid(row=15, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        deleteButton = Button(self, command=self.delete, text="Delete", background='#4286f4')
+        deleteButton.grid(row=16, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        editButton = Button(self, command=self.edit, text="Edit/View", background='#4286f4')
+        editButton.grid(row=17, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['EventName'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        name, keyword, d1, d2, dur1 = self.name.get(), self.keyword.get(), self.d1.get(), self.d2.get(), self.dur1.get()
+        dur2, vis1, vis2, rev1, rev2 = self.dur2.get(), self.vis1.get(), self.vis2.get(), self.rev1.get(), self.rev2.get()
+
+        conv = {'': None, 'Any': None}
+        filts = [conv.get(v,v) for v in [name, keyword, d1, d2, dur1, dur2, vis1, vis2, rev1, rev2]]
+
+        if sort is None:
+            sort = 'EventName'
+
+        if d1:
+            try:
+                datetime.strptime(d1, '%Y-%m-%d')
+            except Exception as e:
+                print(e)
+                messagebox.showwarning('Error', 'Incorrect date format. Please enter YYYY-MM-DD')
+                return
+
+        if d2:
+            try:
+                datetime.strptime(d2, '%Y-%m-%d')
+            except Exception as e:
+                print(e)
+                messagebox.showwarning('Error', 'Incorrect date format. Please enter YYYY-MM-DD')
+                return
+        if dur1 and not dur1.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if dur2 and not dur2.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if rev1 and not rev1.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if rev2 and not rev2.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if vis1 and not vis1.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if vis2 and not vis2.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+
+        events = self.SQL.filter(identifier, *filts + [sort])
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(events)
+        self.resultTable.redraw()
+
+    def back(self):
+        self.master.deiconify()
+        self.destroy()
+
+    def edit(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        eventname, sitename, startdate = row['EventName'], row['SiteName'], row['StartDate']
+
+        if eventname == '':
+            messagebox.showwarning('Error', 'No event selected. Make sure to click on the non-empty '
+                                            'row number to select which event you are editing.')
+            return
+
+        editEventWindow = EditEvent(self)
+        editEventWindow.display(eventname, sitename, startdate)
+        self.withdraw()
+
+    def create(self):
+        createEventWindow = CreateEvent(self)
+        createEventWindow.display()
+        self.withdraw()
+
+    def delete(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        eventname, sitename, startdate = row['EventName'], row['SiteName'], row['StartDate']
+
+        if eventname == '':
+            messagebox.showwarning('Error', 'No event selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+        self.SQL.delete(eventname, sitename, startdate)
+        self.resultTable.deleteRow()
+        self.resultTable.redrawTable()
+        messagebox.showwarning('Success', 'Event successfully deleted.')
+
+
+class EditEvent(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Edit Event')
+        self.config(background='#ffffff')
+        self.SQL = Queries.EditEvent(db)
+
+    def display(self, eventname, sitename, startdate):
+        price, enddate, minstaffreq, cap, cur_staff, avail_staff, desc, dailies = self.SQL.load(identifier, eventname, sitename, startdate)
+        self.staff, self.desc, self.vis1, self.vis2, self.rev1, self.rev2 = StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(),
+        self.desc.set(desc)
+        self.eventname, self.sitename, self.startdate = eventname, sitename, startdate
+
+        self.resultTable = TableCanvas(self, editable=True, data=dailies,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(dailies), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150 * len(list(dailies.values())[0]), height=25 * 7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=25, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        eventnameLabel = Label(self, text=f"Name: {eventname}", font="Helvetica", foreground='#000000', background='#ffffff')
+        eventnameLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        priceLabel = Label(self, text=f"Price: ${price}", font="Helvetica", foreground='#000000', background='#ffffff')
+        priceLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        startdateLabel = Label(self, text=f"Start Date: {startdate}", font="Helvetica", foreground='#000000', background='#ffffff')
+        startdateLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        enddateLabel = Label(self, text=f"End Date: {enddate}", font="Helvetica", foreground='#000000', background='#ffffff')
+        enddateLabel.grid(row=5, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        minStaffLabel = Label(self, text=f"Min Staff Required: {minstaffreq}", font="Helvetica", foreground='#000000', background='#ffffff')
+        minStaffLabel.grid(row=6, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        capacityLabel = Label(self, text=f"Capacity: {cap}", font="Helvetica", foreground='#000000', background='#ffffff')
+        capacityLabel.grid(row=7, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        descLabel = Label(self, text="Description", font="Helvetica", foreground='#000000', background='#ffffff')
+        descLabel.grid(row=8, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        descBox = Entry(self, textvariable=self.desc, width=100)
+        descBox.grid(row=8, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        visLabel = Label(self, text="Daily Visit Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        visLabel.grid(row=9, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        vis1Box = Entry(self, textvariable=self.vis1, width=5)
+        vis1Box.grid(row=9, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        vis2Box = Entry(self, textvariable=self.vis2, width=5)
+        vis2Box.grid(row=9, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        revLabel = Label(self, text="Daily Revenue Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        revLabel.grid(row=10, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        rev1Box = Entry(self, textvariable=self.rev1,  width=5)
+        rev1Box.grid(row=10, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        rev2Box = Entry(self, textvariable=self.rev2,  width=5)
+        rev2Box.grid(row=10, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        self.staffList = Listbox(self, selectmode=MULTIPLE)  # Multiple means you may select multiple sites.
+        self.staffList.grid(row=11, column=0, padx=(4,4), pady=(0,4), columnspan=2, sticky=W+E)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=12, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortVisits = partial(self.filter, 'DailyVisits')
+        sortVisitsButton = Button(self, command=sortVisits, text="Sort by Visits", background='#4286f4')
+        sortVisitsButton.grid(row=13, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortRev = partial(self.filter, 'DailyRevenue')
+        sortRevButton = Button(self, command=sortRev, text="Sort by Revenue", background='#4286f4')
+        sortRevButton.grid(row=14, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortDate = partial(self.filter, 'Date')
+        sortDateButton = Button(self, command=sortDate, text="Sort by Date", background='#4286f4')
+        sortDateButton.grid(row=15, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        updateButton = Button(self, command=partial(self.submit, minstaffreq), text="Update", background='#4286f4')
+        updateButton.grid(row=16, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        for i, staffmember in enumerate(cur_staff + avail_staff):
+            self.staffList.insert(i, staffmember)
+            if staffmember in cur_staff:
+                self.staffList.selection_set(i)
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['Date'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        rev1, rev2, vis1, vis2 = self.rev1.get(), self.rev2.get(), self.vis1.get(), self.vis2.get()
+
+        conv = {'': None, 'Any': None}
+        rev1, rev2, vis1, vis2 = conv.get(rev1, rev1), conv.get(rev2, rev2), conv.get(vis1, vis1), conv.get(vis2,vis2)
+
+        if sort is None:
+            sort = 'Date'
+
+        if rev1 and not rev1.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if rev2 and not rev2.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if vis1 and not vis1.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        if vis2 and not vis2.isdigit():
+            messagebox.showwarning('Error', 'Duration, Visits, and Revenue must be numbers')
+            return
+        print(rev2)
+        dailies = self.SQL.filter(identifier, self.eventname, self.sitename, self.startdate, rev1, rev2, vis1, vis2, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(dailies)
+        self.resultTable.redraw()
+
+    def submit(self, minstaff):
+        desc, staff = self.desc.get(), self.staffList.curselection()
+        staff = [self.staffList.get(i) for i in staff]
+        if desc == '':
+            messagebox.showwarning('Error', 'You must have a description.')
+            return
+        elif len(staff) < minstaff:
+            messagebox.showwarning('Error', 'You need more staff')
+            return
+
+        self.SQL.submit(self.eventname, self.sitename, self.startdate, desc, staff)
+        messagebox.showwarning('Success', 'Event successfully updated.')
 
     def back(self):
         for widget in self.master.winfo_children():
@@ -2758,140 +3139,619 @@ class CreateTransit(Toplevel):
         self.master.deiconify()
         self.destroy()
 
-    def create(self):
-        sitename, manager, zipcode, address, everyday = self.sitename.get(), self.managers.get(), self.zipcode.get(), self.address.get(), self.everyday.get()
 
-        if sitename == '':
-            messagebox.showwarning('Error', 'A site must have a name.')
-            return
-        if len(sitename) > 64:
-            messagebox.showwarning('Error', 'Site name is too long.')
-            return
-        elif len(address) > 64:
-            messagebox.showwarning('Error', 'Address is too long.')
-            return
-        elif len(zipcode) != 5 or zipcode.isdigit() is False:
-            messagebox.showwarning('Error', 'Zipcode is invalid. Make sure to input a 5 digit integer.')
-            return
-        elif manager is None or manager == '':
-            messagebox.showwarning('Error', 'You must input a manager.')
-            return
-
-        if self.SQL.create(sitename, address, zipcode, manager, everyday) == -1:
-                messagebox.showwarning('Error', 'The sitename already exists in the database.')
-                return
-
-        else:
-            messagebox.showwarning('Success', 'Profile successfully updated.')
-            return
-
-
-class staffEventDetail(Toplevel):
-    def __init__(self,master):
+class CreateEvent(Toplevel):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
-        self.title('Event Detail')
+        self.title('Create Transit')
         self.config(background='#ffffff')
+        self.SQL = Queries.CreateEvent(db)
 
     def display(self):
-        self.event = StringVar()
-        self.site = StringVar()
-        self.startDate = StringVar()
-        self.endDate = StringVar()
-        self.durationDays = StringVar()
-        self.staffAssigned = StringVar()
-        self.capacity = StringVar()
-        self.price = StringVar()
-        self.description = StringVar()
-        eventName = "Arboretum Walking Tour"
-        siteName = "Inman Park"
-        start = "2019-02-08"
-        titleLabel = Label(self, text="Event Detail", font="Helvetica", foreground='#000000', background='#ffffff')
-        titleLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E, columnspan = 2)
-        eventLabel = Label(self, text="Event", foreground='#000000', background='#ffffff')
-        eventLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        siteLabel = Label(self, text="Site", foreground='#000000', background='#ffffff')
-        siteLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
-        startDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
-        endDateLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        durationDaysLabel = Label(self, text="Duration Days", foreground='#000000', background='#ffffff')
-        durationDaysLabel.grid(row=6, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        staffAssignedLabel = Label(self, text="Staff Assigned", foreground='#000000', background='#ffffff')
-        staffAssignedLabel.grid(row=7, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        capacityLabel = Label(self, text="Capacity", foreground='#000000', background='#ffffff')
-        capacityLabel.grid(row=8, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        priceLabel = Label(self, text="Price", foreground='#000000', background='#ffffff')
-        priceLabel.grid(row=9, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
-        descriptionLabel = Label(self, text="Description", foreground='#000000', background='#ffffff')
-        descriptionLabel.grid(row=10, column=1, padx=(4, 4), pady=(2, 2), sticky=W)
+        self.eventname, self.price, self.cap, self.minstaff, self.d1, self.d2, self.desc = StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar()
+
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=11, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
-        cursor.execute("SELECT * FROM event WHERE EventName = %s AND SiteName = %s AND %s BETWEEN StartDate AND EndDate", (eventName, siteName, start))
-        result = cursor.fetchone()
-        print(result)
-        eventLabelData = Label(self, text=result.get("EventName"), foreground='#000000', background='#ffffff')
-        eventLabelData.grid(row=2, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        siteLabelData = Label(self, text=result.get("SiteName"), foreground='#000000', background='#ffffff')
-        siteLabelData.grid(row=3, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        startDateLabelData = Label(self, text=start, foreground='#000000', background='#ffffff')
-        startDateLabelData.grid(row=4, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        endDateLabelData = Label(self, text=result.get("EndDate"), foreground='#000000', background='#ffffff')
-        endDateLabelData.grid(row=5, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        durationDaysLabelData = Label(self, text="Duration Days", foreground='#000000', background='#ffffff')
-        durationDaysLabelData.grid(row=6, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        staffAssignedLabelData = Label(self, text="Staff Assigned", foreground='#000000', background='#ffffff')
-        staffAssignedLabelData.grid(row=7, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        capacityLabelData = Label(self, text=result.get("Capacity"), foreground='#000000', background='#ffffff')
-        capacityLabelData.grid(row=8, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        priceLabelData = Label(self, text=result.get("Price"), foreground='#000000', background='#ffffff')
-        priceLabelData.grid(row=9, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
-        descriptionLabelData = Text(self, height=4, width=15, wrap=WORD)
-        self.description.set(result.get("Description"))
-        descriptionLabelData.insert("1.0", self.description.get())
-        descriptionLabelData.grid(row=10, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
+        backButton.grid(row=25, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        eventnameLabel = Label(self, text=f"Name", font="Helvetica", foreground='#000000', background='#ffffff')
+        eventnameLabel.grid(row=1, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        eventnameBox = Entry(self, textvariable=self.eventname, width=100)
+        eventnameBox.grid(row=1, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        priceLabel = Label(self, text=f"Price", font="Helvetica", foreground='#000000', background='#ffffff')
+        priceLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        priceBox = Entry(self, textvariable=self.price, width=100)
+        priceBox.grid(row=2, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        capLabel = Label(self, text=f"Capacity", font="Helvetica", foreground='#000000', background='#ffffff')
+        capLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        capBox = Entry(self, textvariable=self.cap, width=100)
+        capBox.grid(row=3, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        minStaffLabel = Label(self, text=f"Min Staff Required", font="Helvetica", foreground='#000000', background='#ffffff')
+        minStaffLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        minstaffBox = Entry(self, textvariable=self.minstaff, width=100)
+        minstaffBox.grid(row=4, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d1Label = Label(self, text=f"Start Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d1Label.grid(row=5, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        d1Box = Entry(self, textvariable=self.d1, width=100)
+        d1Box.grid(row=5, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d2Label = Label(self, text=f"End Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d2Label.grid(row=6, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        d2Box = Entry(self, textvariable=self.d2, width=100)
+        d2Box.grid(row=6, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        descLabel = Label(self, text=f"Description", font="Helvetica", foreground='#000000', background='#ffffff')
+        descLabel.grid(row=7, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        descBox = Entry(self, textvariable=self.desc, width=100)
+        descBox.grid(row=7, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        self.staffList = Listbox(self, selectmode=MULTIPLE)  # Multiple means you may select multiple sites.
+        self.staffList.grid(row=8, column=0, padx=(4, 4), pady=(0, 4), columnspan=2, sticky=W + E)
+
+        getStaffButton = Button(self, command=self.getstaff, text="Get possible staff members", background='#4286f4')
+        getStaffButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        createButton = Button(self, command=self.submit, text="Create", background='#4286f4')
+        createButton.grid(row=11, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def getstaff(self):
+        d1, d2 = self.d1.get(), self.d2.get()
+
+        if any([d1 == '', d2 == '']):
+            messagebox.showwarning('Error', 'You must input both dates first.')
+            return
+
+        try:
+            datetime.strptime(d1, '%Y-%m-%d')
+            datetime.strptime(d2, '%Y-%m-%d')
+        except Exception as e:
+            print(e)
+            messagebox.showwarning('Error', 'Incorrect date format. Please enter YYYY-MM-DD')
+
+        staff = self.SQL.get_staff(d1, d2)
+        self.staffList.delete(0, END)
+        for i, staffmember in enumerate(staff):
+            self.staffList.insert(i, staffmember)
+
+
+    def submit(self):
+        eventname, price, cap, minstaff, d1, d2, desc, staff = self.eventname.get(), self.price.get(), self.cap.get(), self.minstaff.get(), self.d1.get(), self.d2.get(), self.desc.get(), self.staffList.curselection()
+        staff = [self.staffList.get(i) for i in staff]
+
+        if any([price == '', cap == '', minstaff == '', d1 == '', d2 == '', desc == '', staff == '']):
+            messagebox.showwarning('Error', 'All fields are required.')
+            return
+        elif any([not cap.isdigit(), not minstaff.isdigit()]):
+            messagebox.showwarning('Error', 'Capacity and Min Staff must be ints')
+            return
+        elif len(staff) < int(minstaff):
+            messagebox.showwarning('Error', 'You need more staff.')
+            return
+
+        try:
+            price = float(price)
+            if price > 9999999.99 or price < 0:
+                messagebox.showwarning('Error', 'Price is too long, negative, or has too many decimals. '
+                                                'It must be a 7 digit float, with two extra decimal places.')
+                return
+        except:
+            messagebox.showwarning('Error', 'Price must be a float.')
+            return
+
+        if self.SQL.create(identifier, eventname, price, cap, minstaff, d1, d2, desc, staff) == -1:
+            messagebox.showwarning('Error', 'That event already exists.')
+            return
+
+        else:
+            messagebox.showwarning('Success', 'Event successfully created')
+            return
+
+
+
+    def back(self):
+        for widget in self.master.winfo_children():
+            widget.destroy()  # Refreshes by removing all widgets and then reloading them.
+        self.master.display()
+        self.master.deiconify()
+        self.destroy()
+
+
+class ManageStaff(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Manage Staff')
+        self.config(background='#ffffff')
+        self.SQL = Queries.ManageStaff(db)
+
+    def display(self):
+        staff, sites = self.SQL.load()
+
+        self.site, self.fname, self.lname, self.d1, self.d2 = StringVar(), StringVar(), StringVar(), StringVar(), StringVar()
+
+        self.site.set('Any')
+
+        self.resultTable = TableCanvas(self, editable=True, data=staff,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(staff), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(staff.values())[0]), height=25*7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=13, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        siteLabel = Label(self, text="Site", font="Helvetica", foreground='#000000', background='#ffffff')
+        siteLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        siteDropdown = OptionMenu(self, self.site, *sites + ['Any'])
+        siteDropdown.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+
+        fnameLabel = Label(self, text="First Name", font="Helvetica", foreground='#000000', background='#ffffff')
+        fnameLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2))
+        fnameBox = Entry(self, textvariable=self.fname, width=10)
+        fnameBox.grid(row=3, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        lnameLabel = Label(self, text="Last Name", font="Helvetica", foreground='#000000', background='#ffffff')
+        lnameLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2))
+        lnameBox = Entry(self, textvariable=self.lname, width=10)
+        lnameBox.grid(row=4, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d1Label = Label(self, text="Start Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d1Label.grid(row=5, column=0, padx=(4, 4), pady=(2, 2))
+        d1Box = Entry(self, textvariable=self.d1, width=10)
+        d1Box.grid(row=5, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        d2Label = Label(self, text="End Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        d2Label.grid(row=6, column=0, padx=(4, 4), pady=(2, 2))
+        d2Box = Entry(self, textvariable=self.d2, width=10)
+        d2Box.grid(row=6, column=1, padx=(4, 4), pady=(0, 4), sticky=W)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=7, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortType = partial(self.filter, 'Name')
+        sortTypeButton = Button(self, command=sortType, text="Sort by Name", background='#4286f4')
+        sortTypeButton.grid(row=8, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortName = partial(self.filter, 'NumShifts')
+        sortNameButton = Button(self, command=sortName, text="Sort by # Of Event Shifts", background='#4286f4')
+        sortNameButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['Name'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        site, fname, lname, d1, d2 = self.site.get(), self.fname.get(), self.lname.get(), self.d1.get(), self.d2.get()
+
+        conv = {'': None, 'Any': None}
+        site, fname, lname, d1, d2 = conv.get(site, site), conv.get(fname, fname), conv.get(lname, lname), conv.get(d1, d1), conv.get(d2, d2)
+
+        if sort is None:
+            sort = 'Name'
+        staff = self.SQL.filter(site, fname, lname, d1, d2, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(staff)
+        self.resultTable.redraw()
 
     def back(self):
         self.master.deiconify()
         self.destroy()
 
-class staffViewSchedule(Toplevel):
-    def __init__(self,master):
+
+class SiteReport(Toplevel):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
-        self.title('View Schedule')
+        self.title('Site Report')
         self.config(background='#ffffff')
+        self.SQL = Queries.SiteReport(db)
 
     def display(self):
-        self.eventName = StringVar()
-        self.descriptionKeyword = StringVar()
-        self.startDate = StringVar()
-        self.endDate = StringVar()
-        eventNameLabel = Label(self, text="Event Name", foreground='#000000', background='#ffffff')
-        eventNameLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        descriptionKeywordLabel = Label(self, text="Description Keyword", foreground='#000000', background='#ffffff')
-        descriptionKeywordLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
-        startDateLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
-        endDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        filterButton = Button(self, text="Filter", background='#4286f4')
-        filterButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
-        viewEventButton = Button(self, text="View Event", background='#4286f4')
-        viewEventButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        dailies = self.SQL.load()
+
+        self.startdate, self.enddate, self.e1, self.e2, self.s1, self.s2, self.vis1, self.vis2, self.rev1, self.rev2 = StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar()
+
+        self.resultTable = TableCanvas(self, editable=True, data=dailies,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(dailies), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(dailies.values())[0]), height=25*7)
+        self.resultTable.show()
+
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
-        eventNameBox = Entry(self, textvariable=self.eventName, width=20)
-        eventNameBox.grid(row=1, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-        descriptionKeywordBox = Entry(self, textvariable=self.descriptionKeyword, width=20)
-        descriptionKeywordBox.grid(row=2, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-        startDateBox = Entry(self, textvariable=self.startDate, width=20)
-        startDateBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-        endDateBox = Entry(self, textvariable=self.endDate, width=20)
-        endDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        backButton.grid(row=20, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        startLabel = Label(self, text="StartDate", font="Helvetica", foreground='#000000', background='#ffffff')
+        startLabel.grid(row=2, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        startBox = Entry(self, textvariable=self.startdate, width=5)
+        startBox.grid(row=2, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+
+        endLabel = Label(self, text="End Date", font="Helvetica", foreground='#000000', background='#ffffff')
+        endLabel.grid(row=3, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        endBox = Entry(self, textvariable=self.enddate, width=5)
+        endBox.grid(row=3, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+
+        e1Label = Label(self, text="Event Count", font="Helvetica", foreground='#000000', background='#ffffff')
+        e1Label.grid(row=4, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        e1Box = Entry(self, textvariable=self.e1, width=5)
+        e1Box.grid(row=4, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        e2Box = Entry(self, textvariable=self.e2, width=5)
+        e2Box.grid(row=4, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        s1Label = Label(self, text="Staff Count", font="Helvetica", foreground='#000000', background='#ffffff')
+        s1Label.grid(row=5, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        s1Box = Entry(self, textvariable=self.s1, width=5)
+        s1Box.grid(row=5, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        s2Box = Entry(self, textvariable=self.s2, width=5)
+        s2Box.grid(row=5, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        revLabel = Label(self, text="Revenue Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        revLabel.grid(row=6, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        rev1Box = Entry(self, textvariable=self.rev1,  width=5)
+        rev1Box.grid(row=6, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        rev2Box = Entry(self, textvariable=self.rev2,  width=5)
+        rev2Box.grid(row=6, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        visLabel = Label(self, text="Visit Range", font="Helvetica", foreground='#000000', background='#ffffff')
+        visLabel.grid(row=7, column=0, padx=(2, 2), pady=(2, 2), sticky=W)
+        vis1Box = Entry(self, textvariable=self.vis1, width=5)
+        vis1Box.grid(row=7, column=0, padx=(4, 4), pady=(4, 4), sticky=E)
+        vis2Box = Entry(self, textvariable=self.vis2, width=5)
+        vis2Box.grid(row=7, column=1, padx=(4, 4), pady=(4, 4), sticky=W)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=8, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortDate = partial(self.filter, 'Date')
+        sortDateButton = Button(self, command=sortDate, text="Sort by Date", background='#4286f4')
+        sortDateButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortEvents = partial(self.filter, 'EventCount')
+        sortNameButton = Button(self, command=sortEvents, text="Sort by Event Count", background='#4286f4')
+        sortNameButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortStaff = partial(self.filter, 'StaffCount')
+        sortManButton = Button(self, command=sortStaff, text="Sort by StaffCount", background='#4286f4')
+        sortManButton.grid(row=11, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortVisits = partial(self.filter, 'TotalVisits')
+        sortVisitsButton = Button(self, command=sortVisits, text="Sort by Visits", background='#4286f4')
+        sortVisitsButton.grid(row=12, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortRev = partial(self.filter, 'TotalRevenue')
+        sortRevButton = Button(self, command=sortRev, text="Sort by Revenue", background='#4286f4')
+        sortRevButton.grid(row=13, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        detailButton = Button(self, command=self.detail, text="Daily Detail", background='#4286f4')
+        detailButton.grid(row=14, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+    def detail(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        date = row['Date']
+
+        if date == '':
+            messagebox.showwarning('Error', 'No day selected. Make sure to click on the non-empty '
+                                            'row number to select which date you are detailing.')
+            return
+
+        dailyDetailWindow = DailyDetail(self)
+        dailyDetailWindow.display(date)
+        self.withdraw()
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['Date'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        startdate, enddate, e1, e2, s1, s2, rev1, rev2, vis1, vis2 = self.startdate.get(), self.enddate.get(), self.e1.get(), self.e2.get(), self.s1.get(), self.s2.get(), self.rev1.get(), self.rev2.get(), self.vis1.get(), self.vis2.get()
+
+        try:
+            datetime.strptime(startdate, '%Y-%m-%d')
+            datetime.strptime(enddate, '%Y-%m-%d')
+        except Exception as e:
+            print(e)
+            messagebox.showwarning('Error', 'You must input a start and end date, please enter YYYY-MM-DD')
+            return
+
+        converted = []
+        conv = {'': None, 'Any': None}
+        for i in [e1, e2, s1, s2, rev1, rev2, vis1, vis2]:
+            converted.append(conv.get(i, i))
+
+        e1, e2, s1, s2, rev1, rev2, vis1, vis2 = converted
+
+        if e1 and not e1.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if e2 and not e2.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if s1 and not s1.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if s2 and not s2.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if vis1 and not vis1.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if vis2 and not vis2.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if rev1 and not rev1.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+        if rev2 and not rev2.isdigit():
+            messagebox.showwarning('Error', 'All ranges must be numbers')
+            return
+
+        if sort is None:
+            sort = 'Date'
+
+        dailies = self.SQL.filter(identifier, startdate, enddate, e1, e2, s1, s2, rev1, rev2, vis1, vis2, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(dailies)
+        self.resultTable.redraw()
 
     def back(self):
+        self.master.deiconify()
+        self.destroy()
+
+
+
+    def edit(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        sitename = row['SiteName']
+
+        if sitename == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+
+        editSiteWindow = EditSite(self)
+        editSiteWindow.display(sitename)
+        self.withdraw()
+
+    def create(self):
+        createSiteWindow = CreateSite(self)
+        createSiteWindow.display()
+        self.withdraw()
+
+    def delete(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        sitename = row['SiteName']
+
+        if sitename == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+
+        self.SQL.delete(sitename)
+        self.resultTable.deleteRow()
+        self.resultTable.redrawTable()
+        messagebox.showwarning('Success', 'Site successfully deleted.')
+
+
+class DailyDetail(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Daily Detail')
+        self.config(background='#ffffff')
+        self.SQL = Queries.DailyDetail(db)
+
+    def display(self, date):
+        self.date = date
+        events = self.SQL.filter(identifier, date)
+
+        self.resultTable = TableCanvas(self, editable=True, data=events,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(events), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150 * len(list(events.values())[0]), height=25 * 7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=25, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortEvent = partial(self.filter, 'EventName')
+        sortEventButton = Button(self, command=sortEvent, text="Sort by Event", background='#4286f4')
+        sortEventButton.grid(row=13, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortRev = partial(self.filter, 'Revenue')
+        sortRevButton = Button(self, command=sortRev, text="Sort by Revenue", background='#4286f4')
+        sortRevButton.grid(row=14, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortVisits = partial(self.filter, 'NumVisits')
+        sortVisitsButton = Button(self, command=sortVisits, text="Sort by Visits", background='#4286f4')
+        sortVisitsButton.grid(row=15, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortStaff = partial(self.filter, 'StaffNames')
+        sortVisitsButton = Button(self, command=sortStaff, text="Sort by Staff", background='#4286f4')
+        sortVisitsButton.grid(row=16, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def filter(self, sort):
+
+        dailies = self.SQL.filter(identifier, self.date, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(dailies)
+        self.resultTable.redraw()
+
+
+    def back(self):
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.master.display()  # Refreshes
+        self.master.deiconify()
+        self.destroy()
+
+
+class StaffViewSchedule(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Staff View Schedule')
+        self.config(background='#ffffff')
+        self.SQL = Queries.ViewSchedule(db)
+
+    def display(self):
+        self.eventname, self.keyword, self.startdate, self.enddate = StringVar(), StringVar(), StringVar(), StringVar()
+
+        self.resultTable = TableCanvas(self, editable=True, data={1: {'EventName': '', 'SiteName': '', 'StartDate': '', 'EndDate': '', 'StaffCount': ''}},
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       thefont=('Helvetica', 10), autoresizecols=1, rows=5,
+                                       width=150*5, height=25*7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=25, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        eventNameLabel = Label(self, text="Event Name", foreground='#000000', background='#ffffff')
+        eventNameLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        eventNameBox = Entry(self, textvariable=self.eventname, width=20)
+        eventNameBox.grid(row=2, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        keywordLabel = Label(self, text="Description Keyword", foreground='#000000', background='#ffffff')
+        keywordLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        keywordBox = Entry(self, textvariable=self.keyword, width=20)
+        keywordBox.grid(row=4, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
+        startDateLabel.grid(row=5, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        startDateBox = Entry(self, textvariable=self.startdate, width=20)
+        startDateBox.grid(row=5, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
+        endDateLabel.grid(row=6, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        endDateBox = Entry(self, textvariable=self.enddate, width=20)
+        endDateBox.grid(row=6, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=7, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        sortEvent = partial(self.filter, 'EventName')
+        sortDateButton = Button(self, command=sortEvent, text="Sort Event", background='#4286f4')
+        sortDateButton.grid(row=8, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        sortSite = partial(self.filter, 'SiteName')
+        sortSiteButton = Button(self, command=sortSite, text="Sort Site", background='#4286f4')
+        sortSiteButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        sortStart = partial(self.filter, 'StartDate')
+        sortDateButton = Button(self, command=sortStart, text="Sort Start Date", background='#4286f4')
+        sortDateButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        sortEnd = partial(self.filter, 'EndDate')
+        sortEndButton = Button(self, command=sortEnd, text="Sort End Date", background='#4286f4')
+        sortEndButton.grid(row=11, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        sortStaff = partial(self.filter, 'StaffCount')
+        sortStaffButton = Button(self, command=sortStaff, text="Sort Staff Count", background='#4286f4')
+        sortStaffButton.grid(row=12, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+        viewEventButton = Button(self, command=self.view_event, text="View Event", background='#4286f4')
+        viewEventButton.grid(row=13, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W+E)
+
+    def filter(self, sort='EventName'):
+        eventname, keyword, startdate, enddate = self.eventname.get(), self.keyword.get(), self.startdate.get(), self.enddate.get()
+
+        converted = []
+        conv = {'': None, 'Any': None}
+        for i in [eventname, keyword, startdate, enddate]:
+            converted.append(conv.get(i, i))
+        eventname, keyword, startdate, enddate = converted
+
+        if startdate:
+            try:
+                datetime.strptime(startdate, '%Y-%m-%d')
+            except Exception as e:
+                print(e)
+                messagebox.showwarning('Error', 'Please enter YYYY-MM-DD')
+                return
+        if enddate:
+            try:
+                datetime.strptime(enddate, '%Y-%m-%d')
+            except Exception as e:
+                print(e)
+                messagebox.showwarning('Error', 'YPlease enter YYYY-MM-DD')
+                return
+
+        events = self.SQL.filter(identifier, eventname, keyword, startdate, enddate, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(events)
+        self.resultTable.redraw()
+
+    def view_event(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        eventname, sitename, startdate = row['EventName'], row['SiteName'], row['StartDate']
+
+        if eventname == '':
+            messagebox.showwarning('Error', 'No event selected. Make sure to click on the non-empty '
+                                            'row number to select which event you are detailing.')
+            return
+
+        staffEventDetailWindow = StaffEventDetail(self)
+        staffEventDetailWindow.display(eventname, sitename, startdate)
+        self.withdraw()
+
+    def back(self):
+        self.master.deiconify()
+        self.destroy()
+
+
+class StaffEventDetail(Toplevel):
+    def __init__(self, master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Event Detail')
+        self.config(background='#ffffff')
+        self.SQL = Queries.StaffEventDetail(db)
+
+    def display(self, eventname, sitename, startdate):
+        enddate, duration, cap, price, desc, staffnames = self.SQL.load(eventname, sitename, startdate)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=25, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        eventNameLabel = Label(self, text=f"Event: {eventname}", foreground='#000000', background='#ffffff')
+        eventNameLabel.grid(row=1, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        siteNameLabel = Label(self, text=f"Site: {sitename}", foreground='#000000', background='#ffffff')
+        siteNameLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        startLabel = Label(self, text=f"Startdate: {startdate}", foreground='#000000', background='#ffffff')
+        startLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        endLabel = Label(self, text=f"Enddate: {enddate}", foreground='#000000', background='#ffffff')
+        endLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        pLabel = Label(self, text=f"Price: {price}", foreground='#000000', background='#ffffff')
+        pLabel.grid(row=5, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        durLabel = Label(self, text=f"Duration: {duration}", foreground='#000000', background='#ffffff')
+        durLabel.grid(row=6, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        capLabel = Label(self, text=f"Capacity: {cap}", foreground='#000000', background='#ffffff')
+        capLabel.grid(row=7, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        staffLabel = Label(self, text=f"Staff: {staffnames}", foreground='#000000', background='#ffffff')
+        staffLabel.grid(row=8, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+
+        descLabel = Label(self, text=f"Description: {desc}", foreground='#000000', background='#ffffff', wraplength=500)
+        descLabel.grid(row=9, column=0, columnspan=1, rowspan=5, padx=(4, 4), pady=(2, 2))
+
+    def back(self):
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.master.display()  # Refreshes
         self.master.deiconify()
         self.destroy()
 
@@ -3132,86 +3992,6 @@ class visitorEventDetail(Toplevel):
         self.destroy()
 
 
-class visitorExploreSite(Toplevel):
-    def __init__(self,master):
-        Toplevel.__init__(self)
-        self.master = master
-        self.title('Explore Site')
-        self.config(background='#ffffff')
-
-    def display(self):
-        self.includeVisited = StringVar()
-        self.siteName = StringVar()
-        self.siteName.set("")
-        self.siteList = []
-        self.openEveryday = StringVar()
-        self.openEveryday.set("")
-        self.openEverydayList = ["Yes", "No"]
-        self.startDate = StringVar()
-        self.endDate = StringVar()
-        self.totalVisitsRange1 = StringVar()
-        self.totalVisitsRange2 = StringVar()
-        self.eventCountRange1 = StringVar()
-        self.eventCountRange2 = StringVar()
-        siteLabel = Label(self, text="Site", foreground='#000000', background='#ffffff')
-        siteLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        openEverydayLabel = Label(self, text="Open Everyday", foreground='#000000', background='#ffffff')
-        openEverydayLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
-        startDateLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
-        endDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        totalVisitsRangeLabel = Label(self, text="Total Visits Range", foreground='#000000', background='#ffffff')
-        totalVisitsRangeLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        eventCountRangeLabel = Label(self, text="Event Count Range", foreground='#000000', background='#ffffff')
-        eventCountRangeLabel.grid(row=6, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        includeVisitedCheckbutton = Checkbutton(self, variable=self.includeVisited, text="Include Visited", foreground='#000000', background='#ffffff')
-        includeVisitedCheckbutton.grid(row=7, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        filterButton = Button(self, text="Filter", background='#4286f4')
-        filterButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
-        siteDetailButton = Button(self, text="Site Detail", background='#4286f4')
-        siteDetailButton.grid(row=8, column=2, padx=(2, 2), pady=(2, 2), sticky=W)
-        transitDetailButton = Button(self, text="Transit Detail", background='#4286f4')
-        transitDetailButton.grid(row=8, column=3, padx=(2, 2), pady=(2, 2), sticky=W)
-        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=9, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
-        siteNameDropdown = OptionMenu(self, self.siteName, *self.siteList)
-        siteNameDropdown.grid(row=1, column=2, padx=(8, 5), pady=(0, 4), sticky=W)
-        openEverydayDropdown = OptionMenu(self, self.openEveryday, *self.openEverydayList)
-        openEverydayDropdown.grid(row=2, column=2, padx=(8, 5), pady=(0, 4), sticky=W)
-        startDateBox = Entry(self, textvariable=self.startDate, width=20)
-        startDateBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-        endDateBox = Entry(self, textvariable=self.endDate, width=20)
-        endDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-        totalVisitsRange1Box = Entry(self, textvariable=self.totalVisitsRange1, width=20)
-        totalVisitsRange1Box.grid(row=5, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-        totalVisitsRange2Box = Entry(self, textvariable=self.totalVisitsRange2, width=20)
-        totalVisitsRange2Box.grid(row=5, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-        eventCountRange1Box = Entry(self, textvariable=self.eventCountRange1, width=20)
-        eventCountRange1Box.grid(row=6, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-        eventCountRange2Box = Entry(self, textvariable=self.eventCountRange2, width=20)
-        eventCountRange2Box.grid(row=6, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-
-    def back(self):
-        self.master.deiconify()
-        self.destroy()
-
-
-class visitorTransitDetail(Toplevel):
-    def __init__(self,master):
-        Toplevel.__init__(self)
-        self.master = master
-        self.title('Transit Detail')
-        self.config(background='#ffffff')
-
-    def display(self):
-        pass
-
-    def back(self):
-        self.master.deiconify()
-        self.destroy()
-
-
 class visitorSiteDetail(Toplevel):
     def __init__(self, master):
         Toplevel.__init__(self)
@@ -3275,15 +4055,95 @@ class visitorSiteDetail(Toplevel):
         self.destroy()
 
 
-class visitorVisitHistory(Toplevel):
-    def __init__(self,master):
+class VisitHistory(Toplevel):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Visit History')
         self.config(background='#ffffff')
+        self.SQL = Queries.VisitHistory(db)
 
     def display(self):
-        pass
+        sites, history = self.SQL.load(identifier)
+
+        self.event, self.site, self.d1, self.d2, = StringVar(), StringVar(), StringVar(), StringVar()
+
+        self.site.set('Any')
+
+        self.resultTable = TableCanvas(self, editable=True, data=history,
+                                       read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                       rows=len(history), thefont=('Helvetica', 10), autoresizecols=1,
+                                       width=150*len(list(history.values())[0]), height=25*7)
+        self.resultTable.show()
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=20, column=0, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        eventLabel = Label(self, text="Event", font="Helvetica", foreground='#000000', background='#ffffff')
+        eventLabel.grid(row=2, column=0, padx=(4, 4), pady=(2, 2), sticky=W)
+        eventBox = Entry(self, textvariable=self.event, width=10)
+        eventBox.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W+E)
+
+        siteLabel = Label(self, text="Site", font="Helvetica", foreground='#000000', background='#ffffff')
+        siteLabel.grid(row=3, column=0, padx=(4, 4), pady=(2, 2), sticky=W)
+        siteDropdown = OptionMenu(self, self.site, *sites + ['Any'])
+        siteDropdown.grid(row=3, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
+
+        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
+        startDateLabel.grid(row=4, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        startDateBox = Entry(self, textvariable=self.d1, width=20)
+        startDateBox.grid(row=4, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
+        endDateLabel.grid(row=5, column=0, padx=(4, 4), pady=(2, 2), sticky=E)
+        endDateBox = Entry(self, textvariable=self.d2, width=20)
+        endDateBox.grid(row=5, column=1, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        filterButton = Button(self, command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=6, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortDate = partial(self.filter, 'Date')
+        sortTypeButton = Button(self, command=sortDate, text="Sort by Date", background='#4286f4')
+        sortTypeButton.grid(row=7, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortEvent = partial(self.filter, 'EventName')
+        sortEventButton = Button(self, command=sortEvent, text="Sort by Event", background='#4286f4')
+        sortEventButton.grid(row=8, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortSite = partial(self.filter, 'SiteName')
+        sortSiteButton = Button(self, command=sortSite, text="Sort by Site", background='#4286f4')
+        sortSiteButton.grid(row=9, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        sortPrice = partial(self.filter, 'Price')
+        sortPriceButton = Button(self, command=sortPrice, text="Sort by Price", background='#4286f4')
+        sortPriceButton.grid(row=10, column=0, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def filter(self, sort=None):
+        if sort and self.resultTable.model.getData()[1]['Date'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        d1, d2, site, event = self.d1.get(), self.d2.get(), self.site.get(), self.event.get()
+
+        conv = {'': None, 'Any': None}
+        d1, d2, event, site = conv.get(d1, d1), conv.get(d2, d2), conv.get(event, event), conv.get(site, site),
+
+        for d in [d1, d2]:
+            if d:
+                try:
+                    datetime.strptime(d, '%Y-%m-%d')
+                except Exception as e:
+                    print(e)
+                    messagebox.showwarning('Error', 'Incorrect date format. Please enter YYYY-MM-DD')
+
+        if sort is None:
+            sort = 'Date'
+
+        history = self.SQL.filter(identifier, d1, d2, event, site, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(history)
+        self.resultTable.redraw()
 
     def back(self):
         self.master.deiconify()
