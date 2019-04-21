@@ -736,3 +736,18 @@ class visitorEventDetail:
             event = cursor.fetchone()
             eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description = event['EventName'], event['SiteName'], event['StartDate'], event['EndDate'], event['Price'], event['TicketsRemaining'], event['Description']
             return eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description
+
+class visitorSiteDetail:
+    """(37) Visitor Site Detail"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, sitename):
+        cursor.execute("SELECT Name, OpenEveryday, Address FROM site WHERE Name = \'" +sitename+ "\'")
+        site = cursor.fetchone()
+        siteName, openEveryday, address = site["Name"], site["OpenEveryday"], site["Address"]
+        if(openEveryday == "0"):
+            openEveryday = "No"
+        else:
+            openEveryday = "Yes"
+        return siteName, openEveryday, address

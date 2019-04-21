@@ -3213,14 +3213,62 @@ class visitorTransitDetail(Toplevel):
 
 
 class visitorSiteDetail(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Site Detail')
         self.config(background='#ffffff')
+        self.SQL = Queries.visitorSiteDetail(db)
 
-    def display(self):
-        pass
+    def display(self, sitename):
+        siteName, openEveryday, address = self.SQL.load(sitename)
+
+        self.siteName = StringVar()
+        self.openEveryday = StringVar()
+        self.address = StringVar()
+        self.visitDate = StringVar()
+
+        self.siteName.set(siteName)
+        self.openEveryday.set(openEveryday)
+        self.address.set(address)
+
+        siteNameLabel = Label(self, text='Site Name', foreground='#000000', background='#ffffff')
+        siteNameLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        siteNameDataLabel = Label(self, text=self.siteName.get(), foreground='#000000', background='#ffffff')
+        siteNameDataLabel.grid(row=1, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        openEverydayLabel = Label(self, text='Open Everyday', foreground='#000000', background='#ffffff')
+        openEverydayLabel.grid(row=2, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        openEverydayDataLabel = Label(self, text=self.openEveryday.get(), foreground='#000000', background='#ffffff')
+        openEverydayDataLabel.grid(row=2, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        addressLabel = Label(self, text='Address', foreground='#000000', background='#ffffff')
+        addressLabel.grid(row=3, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        addressDataLabel = Label(self, text=self.address.get(), foreground='#000000', background='#ffffff')
+        addressDataLabel.grid(row=3, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        visitDateLabel = Label(self, text='Visit Date', foreground='#000000', background='#ffffff')
+        visitDateLabel.grid(row=4, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        visitDateDataBox = Entry(self, textvariable=self.visitDate, width=20)
+        visitDateDataBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        logVisitButton = Button(self, command=self.logVisit, text="Log Visit", background='#4286f4')
+        logVisitButton.grid(row=5, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def logVisit(self):
+        cursor.execute("SELECT SiteName FROM visitsite WHERE SiteName = \'" +self.siteName.get()+ "\'" +" AND VisUsername = \'" +identifier+ "\'"+ " AND Date = \'" +self.visitDate.get()+ "\'")
+        site = cursor.fetchone()
+        if(site is not None):
+            messagebox.showwarning("Already Logged",
+                           "There is already a visit logged for you at this site and date.")
+        else:
+            cursor.execute("INSERT into visitsite values (%s, %s, %s)",
+                      (identifier, self.siteName.get(), self.visitDate.get()))
+            messagebox.showinfo("Success",
+                           "Your visit has been logged.")
 
     def back(self):
         self.master.deiconify()
