@@ -1248,13 +1248,13 @@ class visitorTransitDetail:
         return routes, transportTypes
 
     def filter(self, transporttype):
-        query = "SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
-                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
-                            "JOIN (SELECT * FROM transit) AS t"
-                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
-                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
-                            "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
-                            ")"
+        query = ("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
+                "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
+                "JOIN (SELECT * FROM transit) AS t"
+                "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
+                "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
+                ")")
         query += "WHERE TransportType = \'" +transporttype+ "\'"
 
         with self.connection.cursor() as cursor:
