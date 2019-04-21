@@ -655,9 +655,14 @@ class VisitorExploreSite:
                 f"as m2 on m1.SiteName = m2.SiteName;")
             self.connection.commit()
 
-    def filter(self, name=None, openEveryday=None, startDate=None, endDate=None, visitRangea=None, visitRangeb=None, countRangea=None, countRangeb=None, includeVisited=False, sort="SiteName"):
+            cursor.execute(f"select Name from Site;")
+            sites = cursor.fetchall()
+            sites = [i['Name']for i in sites]
+            sites = ['--ALL--'] + sites
+            return sites
+
+    def filter(self, name='--ALL--', openEveryday='--ALL--', startDate=None, endDate=None, visitRangea=None, visitRangeb=None, countRangea=None, countRangeb=None, includeVisited=False, sort="SiteName"):
         """Given all the filter requirement, return dict of all site details"""
-        ### for --ALL--, leave name as None
         query = f"select SiteName, EventCount, sum(TotalVisits) as TotalVisits, sum(MyVisits) as MyVisits from OMG_view "
 
         if includeVisited:
@@ -665,11 +670,13 @@ class VisitorExploreSite:
         else:
             query += f"where MyVisits = 0 "
 
-        if name:
+        if name != '--ALL--':
             query += f"and SiteName = '{name}' "
 
-        if openEveryday:
+        if openEveryday != '--ALL--':
             query += f"and OpenEveryday = '{openEveryday}' "
+        elif openEveryday == '--ALL--'
+            query += f"and OpenEveryday = 0 and OpenEveryday = 1 "
 
         if startDate:
             query += f"and Date >= '{startDate}' "
