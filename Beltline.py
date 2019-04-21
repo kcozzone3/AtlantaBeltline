@@ -3108,7 +3108,21 @@ class visitorEventDetail(Toplevel):
         backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
     def logVisit(self):
-        pass
+        if((self.visitDate.get() < self.startDate.get()) or (self.visitDate.get() > self.endDate.get())):
+            messagebox.showwarning("Invalid Date",
+                               "Date must be within the time of the event.")
+        else:
+            cursor.execute("SELECT EventName FROM visitevent WHERE EventName = \'" +self.eventName.get()+ "\' AND SiteName = \'" +self.siteName.get()+ "\' AND StartDate = \'" +self.startDate.get()+ "\' AND Date = \'" +self.visitDate.get()+ "\' AND visUsername = \'" +identifier+ "\'")
+            event = cursor.fetchone()
+            if(event is not None):
+                messagebox.showwarning("Already Logged",
+                               "There is already a visit logged for this event at this time.")
+            else:
+                cursor.execute("INSERT into visitevent values (%s, %s, %s, %s, %s)",
+                          (identifier, self.siteName.get(), self.eventName.get(), self.startDate.get(), self.visitDate.get()))
+                messagebox.showinfo("Success",
+                               "Your visit has been logged.")
+
 
     def back(self):
         self.master.deiconify()
