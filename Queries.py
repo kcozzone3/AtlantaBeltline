@@ -619,6 +619,97 @@ class CreateTransit:
                 self.connection.commit()
 
 
+"""Screen 35"""
+class VisitorExploreSite:
+    """(35) VISITOR EXPLORE SITE"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, username):
+        """Given username, create all the views"""
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"CREATE OR REPLACE VIEW `SiteTotal_view` AS select SiteName, EventName, "\
+                f"Date, TotalVisits, OpenEveryday from ((select SiteName, ' ' as EventName, "\
+                f"Date, Count(*) as TotalVisits from visitSite group by SiteName, EventName, "\
+                f"Date union all select SiteName, EventName, Date, Count(*) as TotalVisits from "\
+                f"visitEvent group by SiteName, EventName, Date) as T join (select Name, OpenEveryday "\
+                f"from Site) as s on s.Name = T.SiteName);")
+            self.connection.commit()
+
+            cursor.execute(f"CREATE OR REPLACE VIEW `SiteVis_view` AS select SiteName, EventName, Date, MyVisits, "\
+                f"OpenEveryday from ((select SiteName, ' ' as EventName, Date, Count(*) as MyVisits from "\
+                f"visitSite where VisUsername = '{username}' group by SiteName, EventName, Date union all "\
+                f"select SiteName, EventName, Date, Count(*) as MyVisits from visitEvent where VisUsername "
+                f"= '{username}' group by SiteName, EventName, Date) as T1 join (select Name, OpenEveryday "\
+                "from Site) as s1 on s1.Name = T1.SiteName );")
+            self.connection.commit()
+
+            cursor.execute(f"CREATE OR REPLACE VIEW `OMG_view` AS select m1.SiteName, m1.Date, m1.TotalVisits, "\
+                f"m1.MyVisits, m1.OpenEveryday, m2.EventCount from (SELECT f1.SiteName, f1.EventName, f1.Date, "\
+                f"f1.TotalVisits, f1.OpenEveryday, IFNULL(f2.MyVisits, 0) as MyVisits FROM SiteTotal_View as f1 "\
+                f"LEFT JOIN SiteVis_View as f2 ON f1.SiteName = f2.SiteName and f1.EventName = f2.EventName and "\
+                f"f1.Date = f2.Date) as m1 left join (select SiteName, count(EventName) as EventCount from (SELECT "\
+                f"f1.SiteName, f1.EventName, f1.Date, f1.TotalVisits, f1.OpenEveryday, IFNULL(f2.MyVisits, 0) as "\
+                f"MyVisits FROM SiteTotal_View as f1 LEFT JOIN SiteVis_View as f2 ON f1.SiteName = f2.SiteName and "\
+                "f1.EventName = f2.EventName and f1.Date = f2.Date) as blah where EventName <> ' ' group by SiteName) "\
+                f"as m2 on m1.SiteName = m2.SiteName;")
+            self.connection.commit()
+
+    def filter(self, name=None, openEveryday=None, startDate=None, endDate=None, visitRangea=None, visitRangeb=None, countRangea=None, countRangeb=None, includeVisited=False, sort="SiteName"):
+        """Given all the filter requirement, return dict of all site details"""
+        ### for --ALL--, leave name as None
+        query = f"select SiteName, EventCount, sum(TotalVisits) as TotalVisits, sum(MyVisits) as MyVisits from OMG_view "
+
+        if includeVisited:
+            query += f"where MyVisits = 0 and MyVisits = 1 "
+        else:
+            query += f"where MyVisits = 0 "
+
+        if name:
+            query += f"and SiteName = '{name}' "
+
+        if openEveryday:
+            query += f"and OpenEveryday = '{openEveryday}' "
+
+        if startDate:
+            query += f"and Date >= '{startDate}' "
+        
+        if endDate:
+            query += f"and Date <= '{endDate}' "
+
+        if visitRangea:
+            query += f"and TotalVisits >= '{visitRangea}' "
+
+        if visitRangeb:
+            query += f"and TotalVisits <= '{visitRangeb}' "
+
+        if countRangea:
+            query += f"and EventCount >= '{countRangea}' "
+
+        if countRangeb:
+            query += f"and EventCount <= '{countRangeb}' "
+
+        query += f"group by SiteName "
+
+        if sort:
+            query += f"order by '{sort}';"
+
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(query)
+            siteDetails = cursor.fetchall()
+
+        if siteDetails:
+            for i in siteDetails:
+                for key in i:
+                    i[key] = str(i[key])
+            siteDetails = {i+1: siteDetails[i] for i in range(len(siteDetails))}
+        else:
+            siteDetails = {}
+
+        return siteDetails
+
+
 """Screen 38"""
 class visitorVisitHistory:
     """(38) VISTOR VISIT HISTORY"""
@@ -685,6 +776,7 @@ class visitorVisitHistory:
             history = {}
 
         return history
+
 
 """Scrren 30"""
 class ViewDailyDetail:
