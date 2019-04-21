@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'YOUR PASSWORD HERE'
+MYSQL_PASSWORD = ''
 #######################################
 
 
@@ -1274,33 +1274,14 @@ class VisitorFunctionality(Toplevel):
         self.destroy()
 
     def onVisitorFunctionalityExploreEventButtonClicked(self):
-        pass
-        """
-        def __init__(self, master):
-            Toplevel.__init__(self)
-            self.master = master
-            self.title('ExploreEvent -- Visitor')
-            self.config(background='#ffffff')
-        def display(self):
-            self.eventName = StringVar()
-            self.registrationLastName = StringVar()
-            self.registrationUserName = StringVar()
-            self.registrationPassword = StringVar()
-            self.registrationConfirmPassword = StringVar()
-            registerLabel = Label(self, text="User Only Registration", font="Helvetica",
-                              foreground='#000000', background='#ffffff')
-            registerLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W + E, columnspan=2)
-            firstNameLabel = Label(self, text="First Name", background='#ffffff')
-            firstNameLabel.grid(row=2, column=1, padx=(2, 5), pady=(0, 4), sticky=W)
-            firstNameBox = Entry(self, textvariable=self.registrationFirstName, width=20)
-            firstNameBox.grid(row=2, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
-            """
-
-        #TODO
+        exploreEventWindow = visitorExploreEvent(self)
+        self.withdraw()
+        exploreEventWindow.display()
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
-        pass
-        #TODO
+        exploreSiteWindow = visitorExploreSite(self)
+        self.withdraw()
+        exploreSiteWindow.display()
 
     def onVisitorFunctionalityVisitHistoryButtonButtonClicked(self):
         visitHistoryWindow = visitorVisitHistory(self)
@@ -2921,54 +2902,230 @@ class visitorExploreEvent(Toplevel):
         self.master = master
         self.title('Explore Event')
         self.config(background='#ffffff')
+        self.SQL = Queries.visitorExploreEvent(db)
 
     def display(self):
+        events, eventNames, siteNames, startDates, ticketPrices, ticketRemainings, totalVisits, myVisits = self.SQL.load(identifier)
+
         self.eventName = StringVar()
         self.descriptionKeyword = StringVar()
         self.siteName = StringVar()
+        self.siteName.set("Any")
         self.startDate = StringVar()
         self.endDate = StringVar()
+        self.TVR1 = StringVar()
+        self.TVR2 = StringVar()
+        self.TPR1 = StringVar()
+        self.TPR2 = StringVar()
+        self.TPR2 = StringVar()
+        self.includeVisited = StringVar()
+        self.includeVisited.set("0")
+        self.includeSoldOut = StringVar()
+        self.includeSoldOut.set("0")
+
+        self.resultTable = TableCanvas(self, editable=True, data=events,
+                                        read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                        rows=len(events), thefont=('Helvetica', 10), autoresizecols=1,
+                                        width=150*len(list(events.values())[0]), height=25*7)
+        self.resultTable.grid(row=1, column=1, rowspan=10, sticky=W + E)
+        self.resultTable.show()
+
+        sortEventName = partial(self.filter, 'EventName')
+        sortEventNameButton = Button(self, command=sortEventName, text="Sort by Event Name", background='#4286f4')
+        sortEventNameButton.grid(row=16, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        sortSiteName = partial(self.filter, 'SiteName')
+        sortSiteNameButton = Button(self, command=sortSiteName, text="Sort by Site Name", background='#4286f4')
+        sortSiteNameButton.grid(row=17, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        sortTicketPrice = partial(self.filter, 'Price')
+        sortTicketPriceButton = Button(self, command=sortTicketPrice, text="Sort by Ticket Price", background='#4286f4')
+        sortTicketPriceButton.grid(row=18, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        sortTicketRemaining = partial(self.filter, 'TicketsRemaining')
+        sortTicketRemainingButton = Button(self, command=sortTicketRemaining, text="Sort by Ticket Remaining", background='#4286f4')
+        sortTicketRemainingButton.grid(row=19, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        sortTotalVisits = partial(self.filter, 'TotalNumVisits')
+        sortTotalVisitsButton = Button(self, command=sortTotalVisits, text="Sort by Total Visits", background='#4286f4')
+        sortTotalVisitsButton.grid(row=20, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        sortMyVisits = partial(self.filter, 'MyVisits')
+        sortMyVisitsButton = Button(self, command=sortMyVisits, text="Sort by My Visits", background='#4286f4')
+        sortMyVisitsButton.grid(row=21, column=1, columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
         eventNameLabel = Label(self, text="Event Name", foreground='#000000', background='#ffffff')
-        eventNameLabel.grid(row=1, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        eventNameLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         descriptionKeywordLabel = Label(self, text="Description Keyword", foreground='#000000', background='#ffffff')
-        descriptionKeywordLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        descriptionKeywordLabel.grid(row=6, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         siteNameLabel = Label(self, text="Site Name", foreground='#000000', background='#ffffff')
-        siteNameLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        siteNameLabel.grid(row=7, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
-        startDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        startDateLabel.grid(row=8, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
-        endDateLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        filterButton = Button(self, text="Filter", background='#4286f4')
-        filterButton.grid(row=6, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
-        eventDetailButton = Button(self, text="Event Detail", background='#4286f4')
-        eventDetailButton.grid(row=7, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        endDateLabel.grid(row=9, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        TVRLabel = Label(self, text="Total Visits Range", foreground='#000000', background='#ffffff')
+        TVRLabel.grid(row=10, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        TPRLabel = Label(self, text="Ticket Price Range", foreground='#000000', background='#ffffff')
+        TPRLabel.grid(row=11, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        includeVisitedCheckbutton = Checkbutton(self, variable=self.includeVisited, text="Include Visited", foreground='#000000', background='#ffffff')
+        includeVisitedCheckbutton.grid(row=12, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        includeSoldOutCheckbutton = Checkbutton(self, variable=self.includeSoldOut, text="Include Sold Out", foreground='#000000', background='#ffffff')
+        includeSoldOutCheckbutton.grid(row=13, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        filterButton = Button(self,command=self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=14, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        eventDetailButton = Button(self, command=self.onEventDetailClicked, text="Event Detail", background='#4286f4')
+        eventDetailButton.grid(row=15, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
-        backButton.grid(row=8, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+        backButton.grid(row=22, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
         eventNameBox = Entry(self, textvariable=self.eventName, width=20)
-        eventNameBox.grid(row=1, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        eventNameBox.grid(row=5, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         descriptionKeywordBox = Entry(self, textvariable=self.descriptionKeyword, width=20)
-        descriptionKeywordBox.grid(row=2, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
-        siteNameBox = Entry(self, textvariable=self.siteName, width=20)
-        siteNameBox.grid(row=3, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        descriptionKeywordBox.grid(row=6, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+
+        siteNameDropdown = OptionMenu(self, self.siteName, *siteNames + ['Any'])
+        siteNameDropdown.grid(row=7, column=3, padx=(2, 5), pady=(0, 4), sticky=W)
         startDateBox = Entry(self, textvariable=self.startDate, width=20)
-        startDateBox.grid(row=4, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        startDateBox.grid(row=8, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
         endDateBox = Entry(self, textvariable=self.endDate, width=20)
-        endDateBox.grid(row=5, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        endDateBox.grid(row=9, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TVR1Box = Entry(self, textvariable=self.TVR1, width=20)
+        TVR1Box.grid(row=10, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TVR2Box = Entry(self, textvariable=self.TVR2, width=20)
+        TVR2Box.grid(row=10, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
+        TPR1Box = Entry(self, textvariable=self.TPR1, width=20)
+        TPR1Box.grid(row=11, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        TPR2Box = Entry(self, textvariable=self.TPR2, width=20)
+        TPR2Box.grid(row=11, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
+
+    def filter(self, sort=None):
+        # if sort and self.resultTable.model.getData()[1]['SiteName'] == '':
+        #    messagebox.showwarning('Error', 'You must have data in order to sort')
+        #    return
+
+        event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = self.eventName.get(), self.siteName.get(), self.descriptionKeyword.get(), self.startDate.get(), self.endDate.get(), self.TVR1.get(), self.TVR2.get(), self.TPR1.get(), self.TPR2.get(), self.includeVisited.get(), self.includeSoldOut.get()
+
+        conv = {'': None, 'Any': None}
+        event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut = conv.get(event, event), conv.get(site, site), conv.get(keyword, keyword), conv.get(startDate, startDate), conv.get(endDate, endDate), conv.get(TVR1, TVR1), conv.get(TVR2, TVR2), conv.get(TPR1, TPR1), conv.get(TPR2, TPR2), conv.get(includeVisited, includeVisited), conv.get(includeSoldOut, includeSoldOut)
+
+        if sort is None:
+            sort = 'EventName'
+        sites = self.SQL.filter(identifier, event, site, keyword, startDate, endDate, TVR1, TVR2, TPR1, TPR2, includeVisited, includeSoldOut, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(sites)
+        self.resultTable.redraw()
 
     def back(self):
         self.master.deiconify()
         self.destroy()
 
+    def onEventDetailClicked(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        eventName = row['EventName']
+        siteName = row['SiteName']
+        startDate = row['StartDate']
+
+        if eventName == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+        visitorEventDetailWindow = visitorEventDetail(self)
+        self.withdraw()
+        visitorEventDetailWindow.display(eventName, siteName, startDate)
+
 
 class visitorEventDetail(Toplevel):
-    def __init__(self,master):
+    def __init__(self, master):
         Toplevel.__init__(self)
         self.master = master
         self.title('Event Detail')
         self.config(background='#ffffff')
+        self.SQL = Queries.visitorEventDetail(db)
 
-    def display(self):
-        pass
+    def display(self, eventname, sitename, startdate):
+        eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description = self.SQL.load(identifier, eventname, sitename, startdate)
+
+        self.eventName = StringVar()
+        self.siteName = StringVar()
+        self.startDate = StringVar()
+        self.endDate = StringVar()
+        self.ticketPrice = StringVar()
+        self.ticketsRemaining = StringVar()
+        self.description = StringVar()
+        self.visitDate = StringVar()
+
+        self.eventName.set(eventName)
+        self.siteName.set(siteName)
+        self.startDate.set(startDate)
+        self.endDate.set(endDate)
+        self.ticketPrice.set(ticketPrice)
+        self.ticketsRemaining.set(ticketsRemaining)
+        self.description.set(description)
+
+        eventNameLabel = Label(self, text='Event Name', foreground='#000000', background='#ffffff')
+        eventNameLabel.grid(row=1, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        eventNameDataLabel = Label(self, text=self.eventName.get(), foreground='#000000', background='#ffffff')
+        eventNameDataLabel.grid(row=1, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        siteNameLabel = Label(self, text='Site Name', foreground='#000000', background='#ffffff')
+        siteNameLabel.grid(row=2, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        siteNameDataLabel = Label(self, text=self.siteName.get(), foreground='#000000', background='#ffffff')
+        siteNameDataLabel.grid(row=2, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        startDateLabel = Label(self, text='Start Date', foreground='#000000', background='#ffffff')
+        startDateLabel.grid(row=3, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        startDateDataLabel = Label(self, text=self.startDate.get(), foreground='#000000', background='#ffffff')
+        startDateDataLabel.grid(row=3, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        endDateLabel = Label(self, text='End Date', foreground='#000000', background='#ffffff')
+        endDateLabel.grid(row=4, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        endDateDataLabel = Label(self, text=self.endDate.get(), foreground='#000000', background='#ffffff')
+        endDateDataLabel.grid(row=4, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        ticketPriceLabel = Label(self, text='Ticket Price($)', foreground='#000000', background='#ffffff')
+        ticketPriceLabel.grid(row=5, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        ticketPriceDataLabel = Label(self, text=self.ticketPrice.get(), foreground='#000000', background='#ffffff')
+        ticketPriceDataLabel.grid(row=5, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        ticketsRemainingLabel = Label(self, text='Tickets Remaining', foreground='#000000', background='#ffffff')
+        ticketsRemainingLabel.grid(row=6, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        ticketsRemainingDataLabel = Label(self, text=self.ticketsRemaining.get(), foreground='#000000', background='#ffffff')
+        ticketsRemainingDataLabel.grid(row=6, column=2, padx=(4,4), pady=(2,2), sticky=W)
+
+        descriptionLabel = Label(self, text='Description', foreground='#000000', background='#ffffff')
+        descriptionLabel.grid(row=7, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        descriptionLabelData = Text(self, height=4, width=15, wrap=WORD)
+        descriptionLabelData.insert("1.0", self.description.get())
+        descriptionLabelData.grid(row=7, column=2, padx=(4, 4), pady=(2, 2), sticky=W)
+
+        visitDateLabel = Label(self, text='Visit Date', foreground='#000000', background='#ffffff')
+        visitDateLabel.grid(row=11, column=1, padx=(4,4), pady=(2,2), sticky=W)
+        visitDateDataBox = Entry(self, textvariable=self.visitDate, width=20)
+        visitDateDataBox.grid(row=11, column=2, padx=(0, 2), pady=(0, 4), sticky=W)
+
+        logVisitButton = Button(self, command=self.logVisit, text="Log Visit", background='#4286f4')
+        logVisitButton.grid(row=12, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=13, column=1, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+    def logVisit(self):
+        if((self.visitDate.get() < self.startDate.get()) or (self.visitDate.get() > self.endDate.get())):
+            messagebox.showwarning("Invalid Date",
+                               "Date must be within the time of the event.")
+        elif(self.ticketsRemaining.get() == "0"):
+            messagebox.showwarning("No Tickets Remaining",
+                               "There are no tickets remaining for this event.")
+        else:
+            cursor.execute("SELECT EventName FROM visitevent WHERE EventName = \'" +self.eventName.get()+ "\' AND SiteName = \'" +self.siteName.get()+ "\' AND StartDate = \'" +self.startDate.get()+ "\' AND Date = \'" +self.visitDate.get()+ "\' AND visUsername = \'" +identifier+ "\'")
+            event = cursor.fetchone()
+            if(event is not None):
+                messagebox.showwarning("Already Logged",
+                               "There is already a visit logged for this event at this time.")
+            else:
+                cursor.execute("INSERT into visitevent values (%s, %s, %s, %s, %s)",
+                          (identifier, self.siteName.get(), self.eventName.get(), self.startDate.get(), self.visitDate.get()))
+                messagebox.showinfo("Success",
+                               "Your visit has been logged.")
+
 
     def back(self):
         self.master.deiconify()

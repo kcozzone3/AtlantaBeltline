@@ -3,9 +3,9 @@ from datetime import datetime
 
 
 """
- __      ___                   
- \ \    / (_)                  
-  \ \  / / _  _____      _____ 
+ __      ___
+ \ \    / (_)
+  \ \  / / _  _____      _____
    \ \/ / | |/ _ \ \ /\ / / __|
     \  /  | |  __/\ V  V /\__ \
      \/   |_|\___| \_/\_/ |___/
@@ -16,17 +16,17 @@ Some views that will make later queries easier. Put these at the bottom of build
 """
 This looks like a mess, admittedly. And there's probably a better way to do it.
 This view (transit_connect) basically holds all of the transits that a user may take.
-It joins the transit table and connect table, and then joins to a temporary table that 
-calculates the number of connected sites (which is necessary according to the PDF). 
+It joins the transit table and connect table, and then joins to a temporary table that
+calculates the number of connected sites (which is necessary according to the PDF).
 
-Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to 
+Also, I rename some of the columns in this view because it might save us a few lines of Python later when we have to
 display each column.
 
 CREATE VIEW transit_connect AS
 SELECT T.TransportType, T.Route, T.Price, C.SiteName, tmp.num_sites as NumSites
-    FROM transit AS T JOIN connect AS C 
-                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route) 
-                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp 
+    FROM transit AS T JOIN connect AS C
+                      ON (T.TransportType, T.Route) = (C.TransportType, C.Route)
+                      JOIN (SELECT TransportType, Route, count(*) AS num_sites FROM connect GROUP BY TransportType, Route) AS tmp
                       ON (T.TransportType, T.Route) = (tmp.TransportType, tmp.Route);
 
 CREATE VIEW emp_profile AS
@@ -44,14 +44,14 @@ FROM User AS u WHERE NOT EXISTS(SELECT * FROM administrator WHERE AdminUsername 
 """
 
 """
-  _    _                 ______                _   _                   _ _ _         
- | |  | |               |  ____|              | | (_)                 | (_) |        
- | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  _    _                 ______                _   _                   _ _ _
+ | |  | |               |  ____|              | | (_)                 | (_) |
+ | |  | |___  ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  | |  | / __|/ _ \ '__| |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |__| \__ \  __/ |    | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
   \____/|___/\___|_|    |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                                                                                 __/ |
-                                                                               |___/ 
+                                                                               |___/
 """ """SCREENS 15-16"""
 
 
@@ -203,14 +203,14 @@ class TransitHistory:
 
 
 """
-  ______                 _                         ______                _   _                   _ _ _         
- |  ____|               | |                       |  ____|              | | (_)                 | (_) |        
- | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _ 
+  ______                 _                         ______                _   _                   _ _ _
+ |  ____|               | |                       |  ____|              | | (_)                 | (_) |
+ | |__   _ __ ___  _ __ | | ___  _   _  ___  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   __ _| |_| |_ _   _
  |  __| | '_ ` _ \| '_ \| |/ _ \| | | |/ _ \/ _ \ |  __| | | | '_ \ / __| __| |/ _ \| '_ \ / _` | | | __| | | |
  | |____| | | | | | |_) | | (_) | |_| |  __/  __/ | |  | |_| | | | | (__| |_| | (_) | | | | (_| | | | |_| |_| |
  |______|_| |_| |_| .__/|_|\___/ \__, |\___|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|\__,_|_|_|\__|\__, |
                   | |             __/ |                                                                   __/ |
-                  |_|            |___/                                                                   |___/ 
+                  |_|            |___/                                                                   |___/
 """
 
 
@@ -618,5 +618,121 @@ class CreateTransit:
                                f"{'true' if everyday else 'false'}, '{manager}')")
                 self.connection.commit()
 
+class visitorExploreEvent:
+    """(33) Visitor Explore Event"""
+    def __init__(self, connection):
+        self.connection = connection
 
+    def load(self, identifier):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT EventName, SiteName, StartDate, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate))")
+            events = cursor.fetchall()
 
+            for i in events:
+                for key in i:
+                    i[key] = ""
+
+            events = {1: events[1]}  # Returns just col names, as we have to load a blank table to start with.
+
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            eventNames = [f"{d['EventName']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT DISTINCT Name FROM site WHERE 1=1 ")
+            siteNames = [f"{d['Name']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT EventName, SiteName, StartDate, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            startDates = [f"{d['StartDate']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            ticketPrices = [f"{d['Price']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            ticketRemainings = [f"{d['TicketsRemaining']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            totalVisits = [f"{d['TotalNumVisits']}" for d in cursor.fetchall()]
+
+            cursor.execute("SELECT EventName, SiteName, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT EventName, SiteName, StartDate, Price, Capacity FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1 ")
+            myVisits = [f"{d['MyVisits']}" for d in cursor.fetchall()]
+
+        return events, eventNames, siteNames, startDates, ticketPrices, ticketRemainings, totalVisits, myVisits
+
+    def filter(self, identifier, event=None, site=None, keyword=None, startDate=None, endDate=None, TVR1=None, TVR2=None, TPR1=None, TPR2=None, includeVisited=None, includeSoldOut=None, sort='EventName'):
+
+        query = "SELECT EventName, SiteName, StartDate, Price, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ((SELECT * FROM event) AS e LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \""+identifier+"\" GROUP BY EventName, SiteName, StartDate) AS myve ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)) WHERE 1=1"
+
+        if event is not None:
+           query += f" AND EventName = '{event}' "
+
+        if site is not None:
+           query += f" AND SiteName = '{site}' "
+
+        if keyword is not None:
+           query += f" AND Description LIKE '%{keyword}%' "
+
+        if startDate is not None and endDate is not None:
+           query += f" AND startDate BETWEEN '{startDate}' AND '{endDate}' "
+           query += f" AND endDate BETWEEN '{startDate}' AND '{endDate}' "
+        elif startDate is not None:
+           query += f" AND startDate >= '{startDate}' "
+        elif endDate is not None:
+           query += f" AND endDate <= '{endDate}' "
+
+        if TVR1 is not None:
+           query += f" AND IFNULL(TotalVisits, 0) >= '{TVR1}' "
+
+        if TVR2 is not None:
+           query += f" AND IFNULL(TotalVisits, 0) <= '{TVR2}' "
+
+        if TPR1 is not None:
+           query += f" AND Price >= '{TPR1}' "
+
+        if TPR2 is not None:
+           query += f" AND Price <= '{site}' "
+
+        if includeVisited is not '1':
+           query += f" AND IFNULL(MyCount, 0) = 0 "
+
+        if includeSoldOut is not '1':
+           query += f" AND (Capacity - IFNULL(TotalVisits, 0)) > 0 "
+
+        query += f' ORDER BY {sort} DESC'
+
+        with self.connection.cursor() as cursor:
+            print(query)
+            cursor.execute(query)
+            events = cursor.fetchall()
+
+        for i in events:
+            for key in i:
+                i[key] = str(i[key])
+        events = {i+1: events[i] for i in range(len(events))}
+        print(events)
+        # for d in events.values():
+        #     d['OpenEveryday'] = 'false' if d['OpenEveryday'] == '0' else 'true'
+
+        if events == {}:
+            return self.load(identifier)[0]
+        else:
+            return events
+
+class visitorEventDetail:
+    """(34) Visitor Event Detail"""
+    def __init__(self, connection):
+        self.connection = connection
+
+    def load(self, identifier, eventname, sitename, startdate):
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT EventName, SiteName, Price, Description, StartDate, EndDate, (Capacity - IFNULL(TotalVisits, 0)) AS TicketsRemaining, IFNULL(TotalVisits, 0) AS TotalNumVisits, IFNULL(MyCount, 0) AS MyVisits FROM ("
+                            "(SELECT * FROM event) AS e "
+                            "LEFT JOIN (SELECT EventName AS veEventName, SiteName AS veSiteName, StartDate AS veStartDate, COUNT(*) AS TotalVisits "
+                            "FROM visitevent GROUP BY EventName, SiteName, StartDate) AS ve "
+                            "ON (e.EventName = ve.veEventName AND e.SiteName = ve.veSiteName AND e.StartDate = ve.veStartDate) "
+                            "LEFT JOIN (SELECT EventName AS MYEventName, SiteName AS MYSiteName, StartDate AS MYStartDate, COUNT(*) AS MyCount FROM visitevent WHERE visUsername = \"" + identifier + "\" "
+                            "GROUP BY EventName, SiteName, StartDate) AS myve "
+                            "ON (e.EventName = myve.MYEventName AND e.SiteName = myve.MYSiteName AND e.StartDate = myve.MYStartDate)"
+                            ")"
+                            f"WHERE EventName = '{eventname}' AND SiteName = '{sitename}' AND StartDate = '{startdate}'")
+            event = cursor.fetchone()
+            eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description = event['EventName'], event['SiteName'], event['StartDate'], event['EndDate'], event['Price'], event['TicketsRemaining'], event['Description']
+            return eventName, siteName, startDate, endDate, ticketPrice, ticketsRemaining, description
