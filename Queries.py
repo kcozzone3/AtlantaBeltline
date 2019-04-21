@@ -1050,7 +1050,7 @@ class ViewSchedule:
                 f"WHERE StaffUsername = '{staff}' "
 
         if eventname:
-            query += f"AND EventName LIKE '%{eventname}%'"
+            query += f"AND EventName LIKE '%{eventname}%' "
         if keyword:
             query += f"AND Description LIKE '%{keyword}%' "
         if startdate:
