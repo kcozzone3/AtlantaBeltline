@@ -4011,7 +4011,7 @@ class visitorTransitDetail(Toplevel):
         routes, transportTypes = self.SQL.load(sitename)
 
         self.siteName = StringVar()
-        self.siteName.set(siteName)
+        self.siteName.set(sitename)
         self.transportType = StringVar()
         #self.transportTypes = transportTypes
         self.transitDate = StringVar()
@@ -4027,23 +4027,23 @@ class visitorTransitDetail(Toplevel):
         siteNameLabel = Label(self, text="Site Name", foreground='#000000', background='#ffffff')
         siteNameLabel.grid(row=11, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         siteNameDataLabel = Label(self, text=self.siteName.get(), foreground='#000000', background='#ffffff')
-        siteNameDataLabel.grid(row=11, column=2, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+        siteNameDataLabel.grid(row=11, column=3, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
 
         transportTypeLabel = Label(self, text="Transport Type", foreground='#000000', background='#ffffff')
         transportTypeLabel.grid(row=12, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        transportTypeDropdown = OptionMenu(self, self.transportType, *transportTypes + ['Any'])
-        transportTypeDropdown.grid(row=12, column=2, padx=(2, 5), pady=(0, 4), sticky=W)
+        transportTypeDropdown = OptionMenu(self, self.transportType, *transportTypes)
+        transportTypeDropdown.grid(row=12, column=3, padx=(2, 5), pady=(0, 4), sticky=W)
 
         filterButton = Button(self,command=self.filter, text="Filter", background='#4286f4')
-        filterButton.grid(row=12, column=3, padx=(2, 2), pady=(2, 2), sticky=W)
+        filterButton.grid(row=12, column=4, padx=(2, 2), pady=(2, 2), sticky=W)
 
         transitDateLabel = Label(self, text="Transit Date", foreground='#000000', background='#ffffff')
         transitDateLabel.grid(row=13, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
         transitDateBox = Entry(self, textvariable=self.transitDate, width=20)
-        transitDateBox.grid(row=13, column=2, padx=(0, 2), pady=(0, 4), sticky=E)
+        transitDateBox.grid(row=13, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
 
         logVisitButton = Button(self, command=self.logVisit, text="Log Visit", background='#4286f4')
-        logVisitButton.grid(row=13, column=3, padx=(2, 2), pady=(2, 2), sticky=W + E)
+        logVisitButton.grid(row=13, column=4, padx=(2, 2), pady=(2, 2), sticky=W + E)
 
         backButton = Button(self, command=self.back, text="Back", background='#4286f4')
         backButton.grid(row=14, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
@@ -4051,14 +4051,14 @@ class visitorTransitDetail(Toplevel):
     def logVisit(self):
         row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
         routeName = row['Route']
-        cursor.execute("Select Route From take WHERE Username = \'" +identifier+ "\'' AND Date = \'" +self.transitDate.get()+ "\'' AND Route = \'" +routeName+ "\'' AND TransportType = \'" +self.transportType.get()+ "\'")
+        cursor.execute("Select Route From take WHERE Username = \'" +identifier+ "\' AND Date = \'" +self.transitDate.get()+ "\' AND Route = \'" +routeName+ "\' AND TransportType = \'" +self.transportType.get()+ "\'")
         route = cursor.fetchone()
         if(route is not None):
             messagebox.showwarning("Already Logged",
                            "There is already a visit logged for you at this site and date.")
         else:
             cursor.execute("INSERT into take values (%s, %s, %s, %s)",
-                      (identifier, self.transportType.get(), route, self.transitDate.get()))
+                      (identifier, self.transportType.get(), routeName, self.transitDate.get()))
             messagebox.showinfo("Success",
                            "Your visit has been logged.")
 
@@ -4070,7 +4070,7 @@ class visitorTransitDetail(Toplevel):
 
         # if sort is None:
         #     sort = 'EventName'
-        routes = self.SQL.filter(self.transportType.get())
+        routes = self.SQL.filter(self.siteName.get(), self.transportType.get())
 
         self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
         self.resultTable.model.importDict(routes)

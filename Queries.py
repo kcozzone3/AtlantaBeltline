@@ -1236,7 +1236,7 @@ class visitorTransitDetail:
                     i[key] = ""
 
             print(routes)
-            routes = {1: routes[0]}
+            routes = {0: routes[0]}
 
             cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
                             "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "
@@ -1248,7 +1248,7 @@ class visitorTransitDetail:
             transportTypes = [f"{d['TransportType']}" for d in cursor.fetchall()]
         return routes, transportTypes
 
-    def filter(self, transporttype):
+    def filter(self, sitename, transporttype):
         query = ("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
                 "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "
                 "JOIN (SELECT * FROM transit) AS t "
@@ -1256,7 +1256,7 @@ class visitorTransitDetail:
                 "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc "
                 "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
                 ")")
-        query += "WHERE TransportType = \'" +transporttype+ "\'"
+        query += "WHERE c.TransportType = \'" +transporttype+ "\'"
 
         with self.connection.cursor() as cursor:
             print(query)
