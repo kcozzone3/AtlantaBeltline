@@ -1223,10 +1223,10 @@ class visitorTransitDetail:
     def load(self, sitename):
         with self.connection.cursor() as cursor:
             cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
-                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
-                            "JOIN (SELECT * FROM transit) AS t"
-                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
-                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "
+                            "JOIN (SELECT * FROM transit) AS t "
+                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType) "
+                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc "
                             "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
                             ")")
             routes = cursor.fetchall()
@@ -1235,13 +1235,13 @@ class visitorTransitDetail:
                 for key in i:
                     i[key] = ""
 
-            routes = {1: events[1]}
+            routes = {1: routes[1]}
 
             cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
-                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
-                            "JOIN (SELECT * FROM transit) AS t"
-                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
-                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                            "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "
+                            "JOIN (SELECT * FROM transit) AS t "
+                            "ON (t.Route = c.Route AND t.TransportType = c.TransportType) "
+                            "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc "
                             "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
                             ")")
             transportTypes = [f"{d['TransportType']}" for d in cursor.fetchall()]
@@ -1249,10 +1249,10 @@ class visitorTransitDetail:
 
     def filter(self, transporttype):
         query = ("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
-                "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\'') AS c"
-                "JOIN (SELECT * FROM transit) AS t"
-                "ON (t.Route = c.Route AND t.TransportType = c.TransportType)"
-                "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc"
+                "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "
+                "JOIN (SELECT * FROM transit) AS t "
+                "ON (t.Route = c.Route AND t.TransportType = c.TransportType) "
+                "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc "
                 "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
                 ")")
         query += "WHERE TransportType = \'" +transporttype+ "\'"
