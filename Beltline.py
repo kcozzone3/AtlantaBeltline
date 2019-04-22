@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Gwhiteley99'
+MYSQL_PASSWORD = 'Dihydrogen_sulfate'
 #######################################
 
 
@@ -1545,6 +1545,7 @@ class ManagerVisitorFunctionality(Toplevel):
         visitHistoryWindow = VisitHistory(self)
         self.withdraw()
         visitHistoryWindow.display()
+
     def onManagerVisitorFunctionalityBackButtonClicked(self):
         self.master.deiconify()
         self.destroy()
@@ -4075,9 +4076,160 @@ class visitorTransitDetail(Toplevel):
         self.resultTable.model.importDict(routes)
         self.resultTable.redraw()
 
+
+class VisitorExploreSite(Toplevel):
+    def __init__(self,master):
+        Toplevel.__init__(self)
+        self.master = master
+        self.title('Explore Site')
+        self.config(background='#ffffff')
+        self.SQL = Queries.VisitorExploreSite(db)
+
+    def display(self):
+        sitedict = {1:{"SiteName":"","EventCount":"","TotalVisits":"","MyVisits":""}}
+        sites = self.SQL.load(identifier)
+
+
+        self.includeVisited = StringVar()
+        self.includeVisited.set("0")
+        self.siteName = StringVar()
+        self.siteName.set("Any")
+        self.openEveryday = StringVar()
+        self.openEveryday.set("Any")
+        self.openEverydayList = ["0", "1"]
+        self.startDate = StringVar()
+        self.endDate = StringVar()
+        self.totalVisitsRange1 = StringVar()
+        self.totalVisitsRange2 = StringVar()
+        self.eventCountRange1 = StringVar()
+        self.eventCountRange2 = StringVar()
+        self.resultTable = TableCanvas(self, editable=True, data=sitedict,
+                                        read_only=True, rowheaderwidth=15, maxcellwidth=200, cellwidth=150,
+                                        rows=len(sitedict), thefont=('Helvetica', 10), autoresizecols=1,
+                                        width=150*len(list(sitedict.values())[0]), height=25*7)
+
+        self.resultTable.show()
+
+        siteLabel = Label(self, text="Site", foreground='#000000', background='#ffffff')
+        siteLabel.grid(row=2, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        siteNameDropdown = OptionMenu(self, self.siteName, *sites)
+        siteNameDropdown.grid(row=2,column=3,padx=(8,5),pady=(0,4),sticky = W)
+
+        openEverydayLabel = Label(self, text="Open Everyday", foreground='#000000', background='#ffffff')
+        openEverydayLabel.grid(row=3, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        startDateLabel = Label(self, text="Start Date", foreground='#000000', background='#ffffff')
+        startDateLabel.grid(row=4, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        endDateLabel = Label(self, text="End Date", foreground='#000000', background='#ffffff')
+        endDateLabel.grid(row=5, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        totalVisitsRangeLabel = Label(self, text="Total Visits Range", foreground='#000000', background='#ffffff')
+        totalVisitsRangeLabel.grid(row=6, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        eventCountRangeLabel = Label(self, text="Event Count Range", foreground='#000000', background='#ffffff')
+        eventCountRangeLabel.grid(row=7, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
+
+        includeVisitedCheckbutton = Checkbutton(self, variable=self.includeVisited, text="Include Visited", foreground='#000000', background='#ffffff')
+        includeVisitedCheckbutton.grid(row=8, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan=2)
+
+        filterButton = Button(self, command =self.filter, text="Filter", background='#4286f4')
+        filterButton.grid(row=9, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
+        siteDetailButton = Button(self, command = self.onSiteDetailButtonClicked,text="Site Detail", background='#4286f4')
+        siteDetailButton.grid(row=9, column=2, padx=(2, 2), pady=(2, 2), sticky=W)
+
+        transitDetailButton = Button(self, command = self.onTransitDetailButtonClicked,text="Transit Detail", background='#4286f4')
+        transitDetailButton.grid(row=9, column=3, padx=(2, 2), pady=(2, 2), sticky=W)
+
+        backButton = Button(self, command=self.back, text="Back", background='#4286f4')
+        backButton.grid(row=10, column=1, padx=(2, 2), pady=(2, 2), sticky=W)
+
+        sortSite = partial(self.filter,'SiteName')
+        sortSiteButton = Button(self,command=sortSite,text='Sort by Site Name', background= '#4286f4')
+        sortSiteButton.grid(row=11, column=1,columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        eventCount = partial(self.filter,'EventCount')
+        eventCountButton = Button(self,command=eventCount, text = 'Sort by Event Count', background= '#4286f4')
+        eventCountButton.grid(row = 12,column=1,columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        totalVisits = partial(self.filter,'TotalVisits')
+        totalVisitsButton = Button(self,command=totalVisits, text='Sort by Total Visits', background= '#4286f4')
+        totalVisitsButton.grid(row = 13,column=1,columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        myVisits = partial(self.filter, 'MyVisits')
+        myVisitsButton = Button(self,command=myVisits, text = 'Sort by My Visits', background= '#4286f4')
+        myVisitsButton.grid(row = 14,column=1,columnspan=2, padx=(2, 2), pady=(2, 2), sticky=W + E)
+
+        openEverydayDropdown = OptionMenu(self, self.openEveryday, *self.openEverydayList + ['Any'])
+        openEverydayDropdown.grid(row=3, column=3, padx=(8, 5), pady=(0, 4), sticky=W)
+        startDateBox = Entry(self, textvariable=self.startDate, width=20)
+        startDateBox.grid(row=4, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        endDateBox = Entry(self, textvariable=self.endDate, width=20)
+        endDateBox.grid(row=5, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        totalVisitsRange1Box = Entry(self, textvariable=self.totalVisitsRange1, width=20)
+        totalVisitsRange1Box.grid(row=6, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        totalVisitsRange2Box = Entry(self, textvariable=self.totalVisitsRange2, width=20)
+        totalVisitsRange2Box.grid(row=6, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
+        eventCountRange1Box = Entry(self, textvariable=self.eventCountRange1, width=20)
+        eventCountRange1Box.grid(row=7, column=3, padx=(0, 2), pady=(0, 4), sticky=E)
+        eventCountRange2Box = Entry(self, textvariable=self.eventCountRange2, width=20)
+        eventCountRange2Box.grid(row=7, column=4, padx=(0, 2), pady=(0, 4), sticky=E)
+
+
+    def onSiteDetailButtonClicked(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        siteName = row['SiteName']
+
+        if siteName == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+        siteDetailWindow = visitorSiteDetail(self)
+        siteDetailWindow.display(siteName)
+        self.withdraw()
+
+    def onTransitDetailButtonClicked(self):
+        row = self.resultTable.model.getRecordAtRow(self.resultTable.getSelectedRow())
+        siteName = row['SiteName']
+
+        if siteName == '':
+            messagebox.showwarning('Error', 'No site selected. Make sure to click on the non-empty '
+                                            'row number to select which transit you are taking.')
+            return
+
+        transitDetailWindow = visitorTranistDetail(self)
+        transitDetailWindow.display(siteName)
+        self.withdraw()
+
+    def filter(self, sort = None):
+        if sort and self.resultTable.model.getData()[1]['SiteName'] == '':
+            messagebox.showwarning('Error', 'You must have data in order to sort')
+            return
+
+        includeVisited, siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2= self.includeVisited.get(), self.siteName.get(), self.openEveryday.get(), self.startDate.get(), self.endDate.get(), self.totalVisitsRange1.get(), self.totalVisitsRange2.get()
+        eventCountRange1, eventCountRange2 = self.eventCountRange1.get(), self.eventCountRange2.get()
+        converted = []
+        conv = {'': None, 'Any': None}
+        for i in [includeVisited, siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2, eventCountRange1, eventCountRange2]:
+            converted.append(conv.get(i,i))
+        print(converted)
+        includeVisited, siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2, eventCountRange1, eventCountRange2 = converted
+
+        if sort is None:
+            sort = 'SiteName'
+        sitedetail = self.SQL.filter(siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2, eventCountRange1, eventCountRange2, includeVisited, sort)
+
+        self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
+        self.resultTable.model.importDict(sitedetail)
+        self.resultTable.redraw()
+
     def back(self):
         self.master.deiconify()
         self.destroy()
+
 
 class visitorSiteDetail(Toplevel):
     def __init__(self, master):
