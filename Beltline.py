@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = ''
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -1282,8 +1282,9 @@ class VisitorFunctionality(Toplevel):
 
 
     def onVisitorFunctionalityExploreSiteButtonClicked(self):
-        pass
-        #TODO
+        ExploreSiteWindow = visitorExploreSite(self)
+        ExploreSiteWindow.display()
+        self.withdraw()
 
     def onVisitorFunctionalityVisitHistoryButtonButtonClicked(self):
         visitHistoryWindow = VisitHistory(self)
@@ -1435,7 +1436,9 @@ class AdministratorVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onAdminVisitorExploreSiteButtonClicked(self):
-        pass
+        ExploreSiteWindow = visitorExploreSite(self)
+        ExploreSiteWindow.display()
+        self.withdraw()
 
     def onAdminVisitorExploreEventButtonClicked(self):
         exploreEventWindow = visitorExploreEvent(self)
@@ -1519,7 +1522,9 @@ class ManagerVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onManagerVisitorExploreSiteButtonClicked(self):
-        pass
+        ExploreSiteWindow = visitorExploreSite(self)
+        ExploreSiteWindow.display()
+        self.withdraw()
 
     def onManagerVisitorExploreEventButtonClicked(self):
         exploreEventWindow = visitorExploreEvent(self)
@@ -1596,7 +1601,9 @@ class StaffVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onStaffVisitorExploreSiteButtonClicked(self):
-        pass
+        ExploreSiteWindow = visitorExploreSite(self)
+        ExploreSiteWindow.display()
+        self.withdraw()
 
     def onStaffVisitorTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
