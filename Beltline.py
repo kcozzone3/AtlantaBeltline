@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Dihydrogen_sulfate'
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -4077,7 +4077,7 @@ class visitorTransitDetail(Toplevel):
         self.resultTable.redraw()
 
 
-class VisitorExploreSite(Toplevel):
+class visitorExploreSite(Toplevel):
     def __init__(self,master):
         Toplevel.__init__(self)
         self.master = master
@@ -4200,7 +4200,7 @@ class VisitorExploreSite(Toplevel):
                                             'row number to select which transit you are taking.')
             return
 
-        transitDetailWindow = visitorTranistDetail(self)
+        transitDetailWindow = visitorTransitDetail(self)
         transitDetailWindow.display(siteName)
         self.withdraw()
 
