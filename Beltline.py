@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'Gwhiteley99'
+MYSQL_PASSWORD = 'INSERT PASSWORD HERE'
 #######################################
 
 
@@ -40,9 +40,6 @@ class Login(Toplevel):
     def display(self):
         self.loginEmail = StringVar()
         self.loginPassword = StringVar()
-
-        self.loginEmail.set('s1@beltline.com')
-        self.loginPassword.set('staff1234')
 
         # create a label (text) on the login window with the text of login with certain other properties
         loginLabel = Label(self, text="Login", font="Helvetica", foreground='#000000', background='#ffffff')
