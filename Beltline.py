@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = 'INSERT PASSWORD HERE'
+MYSQL_PASSWORD = 'Gwhiteley99'
 #######################################
 
 
@@ -4028,7 +4028,7 @@ class visitorTransitDetail(Toplevel):
 
         transportTypeLabel = Label(self, text="Transport Type", foreground='#000000', background='#ffffff')
         transportTypeLabel.grid(row=12, column=1, padx=(4, 4), pady=(2, 2), sticky=W, columnspan = 2)
-        transportTypeDropdown = OptionMenu(self, self.transportType, *transportTypes)
+        transportTypeDropdown = OptionMenu(self, self.transportType, *transportTypes + ['Any'])
         transportTypeDropdown.grid(row=12, column=3, padx=(2, 5), pady=(0, 4), sticky=W)
 
         filterButton = Button(self,command=self.filter, text="Filter", background='#4286f4')

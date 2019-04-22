@@ -1256,7 +1256,10 @@ class visitorTransitDetail:
                 "JOIN (SELECT COUNT(*) AS NumConnectedSites, Route, TransportType FROM connect GROUP BY Route, TransportType) AS cc "
                 "ON (c.Route = cc.Route AND c.TransportType = cc.TransportType)"
                 ")")
-        query += "WHERE c.TransportType = \'" +transporttype+ "\'"
+        if(transporttype != 'Any'):
+            query += "WHERE c.TransportType = \'" +transporttype+ "\'"
+
+
 
         with self.connection.cursor() as cursor:
             print(query)
