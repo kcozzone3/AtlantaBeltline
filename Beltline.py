@@ -15,7 +15,7 @@ from tkintertable import TableModel, TableCanvas
 
 # PUT PASSWORD HERE
 #######################################
-MYSQL_PASSWORD = ''
+MYSQL_PASSWORD = 'Dihydrogen_sulfate'
 #######################################
 
 
@@ -1596,7 +1596,9 @@ class StaffVisitorFunctionality(Toplevel):
         self.withdraw()
 
     def onStaffVisitorExploreSiteButtonClicked(self):
-        pass
+        exploreSiteWindow = VisitorExploreSite(self)
+        exploreSiteWindow.display()
+        self.withdraw()
 
     def onStaffVisitorTakeTransitButtonClicked(self):
         takeTransitWindow = TakeTransit(self)
@@ -3991,6 +3993,7 @@ class visitorEventDetail(Toplevel):
         self.master.deiconify()
         self.destroy()
 
+
 class visitorTransitDetail(Toplevel):
     def __init__(self,master):
         Toplevel.__init__(self)
@@ -4071,6 +4074,7 @@ class visitorTransitDetail(Toplevel):
     def back(self):
         self.master.deiconify()
         self.destroy()
+
 
 class visitorSiteDetail(Toplevel):
     def __init__(self, master):
