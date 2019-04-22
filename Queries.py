@@ -1311,14 +1311,14 @@ class VisitorExploreSite:
             sites = ['Any'] + sites
             return sites
 
-    def filter(self, name=None, openEveryday=None, startDate=None, endDate=None, visitRangea=None, visitRangeb=None, countRangea=None, countRangeb=None, includeVisited=None, sort="SiteName"):
+    def filter(self, username, name=None, openEveryday=None, startDate=None, endDate=None, visitRangea=None, visitRangeb=None, countRangea=None, countRangeb=None, includeVisited=None, sort="SiteName"):
         """Given all the filter requirement, return dict of all site details"""
         query = f"select SiteName, EventCount, sum(TotalVisits) as TotalVisits, sum(MyVisits) as MyVisits from OMG_view "
 
-        if includeVisited == '1':
-            query += f"where (MyVisits = 0 OR MyVisits = 1) "
+        if includeVisited == '0':
+            query += f"where SiteName NOT IN (SELECT SiteName from visitsite WHERE VisUsername = '{username}') "
         else:
-            query += f"where MyVisits = 0 "
+            query += f"where 1=1 "
 
         if name:
             query += f"and SiteName = '{name}' "

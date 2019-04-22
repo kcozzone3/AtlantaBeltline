@@ -4224,7 +4224,7 @@ class visitorExploreSite(Toplevel):
 
         if sort is None:
             sort = 'SiteName'
-        sitedetail = self.SQL.filter(siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2, eventCountRange1, eventCountRange2, includeVisited, sort)
+        sitedetail = self.SQL.filter(identifier, siteName, openEveryday, startDate, endDate, totalVisitsRange1, totalVisitsRange2, eventCountRange1, eventCountRange2, includeVisited, sort)
 
         self.resultTable.model.deleteRows(range(0, self.resultTable.model.getRowCount()))
         self.resultTable.model.importDict(sitedetail)
