@@ -1235,7 +1235,8 @@ class visitorTransitDetail:
                 for key in i:
                     i[key] = ""
 
-            routes = {1: routes[1]}
+            print(routes)
+            routes = {1: routes[0]}
 
             cursor.execute("SELECT c.Route, c.TransportType, Price, cc.NumConnectedSites FROM ("
                             "(SELECT Route, TransportType FROM connect WHERE SiteName = \'" +sitename+ "\') AS c "

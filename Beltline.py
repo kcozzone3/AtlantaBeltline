@@ -4076,6 +4076,10 @@ class visitorTransitDetail(Toplevel):
         self.resultTable.model.importDict(routes)
         self.resultTable.redraw()
 
+    def back(self):
+        self.master.deiconify()
+        self.destroy()
+
 
 class visitorExploreSite(Toplevel):
     def __init__(self,master):
